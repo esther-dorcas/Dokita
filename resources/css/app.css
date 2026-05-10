@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   STYLES PERSONNALISÉS - DOKITA PREMIUM
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Card hover effect */
+.card-hover {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -4px rgba(14, 165, 233, 0.15);
+}
+
+/* Glass morphism effect */
+.glass {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Gradient text */
+.text-gradient {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Button base styles */
+.btn-primary {
+    @apply bg-medical-600 text-white font-bold py-3 px-6 rounded-xl
+           hover:bg-medical-700 hover:-translate-y-0.5 active:translate-y-0
+           transition-all duration-300 shadow-medical hover:shadow-medical-lg;
+}
+
+.btn-outline {
+    @apply border-2 border-medical-600 text-medical-600 font-bold
+           py-3 px-6 rounded-xl hover:bg-medical-50 transition-all duration-300;
+}
+
+.btn-ghost {
+    @apply text-medical-600 font-bold py-3 px-6 rounded-xl
+           hover:bg-medical-50 transition-all duration-300;
+}
+
+/* Input styles */
+.input-primary {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
+           focus:ring-2 focus:ring-medical-500/20 focus:border-medical-500
+           outline-none transition-all duration-300 shadow-sm;
+}
+
+/* Badge styles */
+.badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide;
+}
+
+.badge-success {
+    @apply bg-trust-green-50 text-trust-green-600 border border-trust-green-100;
+}
+
+.badge-warning {
+    @apply bg-amber-50 text-amber-600 border border-amber-100;
+}
+
+.badge-danger {
+    @apply bg-red-50 text-red-600 border border-red-100;
+}
+
+.badge-info {
+    @apply bg-medical-50 text-medical-600 border border-medical-100;
+}
+
+/* Skeleton loading */
+.skeleton {
+    @apply animate-pulse bg-slate-100 rounded;
+}
+
+/* Floating animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse animation for status indicators */
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.animate-pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Leaflet map customization */
+.leaflet-container {
+    font-family: 'Inter', sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.leaflet-popup-content {
+    margin: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Mobile responsive utilities */
+@media (max-width: 640px) {
+    .mobile-hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    .mobile-hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
