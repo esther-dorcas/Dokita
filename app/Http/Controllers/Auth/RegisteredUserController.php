@@ -8,7 +8,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -30,26 +29,36 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // On adapte le rôle si c'est 'praticien' pour correspondre à 'medecin' dans la DB
         if ($request->user_role === 'praticien') {
             $request->merge(['user_role' => 'medecin']);
         }
 
-        $request->validate([
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname'  => ['required', 'string', 'max:255'],
-            'phone'     => ['required', 'string', 'max:20'],
+        $rules = [
             'user_role' => ['required', 'in:patient,medecin,hopital'],
             'email'     => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone'     => ['required', 'string', 'max:20'],
             'password'  => ['required', Rules\Password::defaults()],
-        ]);
+        ];
+
+        if ($request->user_role === 'hopital') {
+            $rules['hospital_name'] = ['required', 'string', 'max:255'];
+        } else {
+            $rules['firstname'] = ['required', 'string', 'max:255'];
+            $rules['lastname']  = ['required', 'string', 'max:255'];
+        }
+
+        $request->validate($rules);
+
+        $name = $request->user_role === 'hopital'
+            ? $request->hospital_name
+            : $request->firstname . ' ' . $request->lastname;
 
         $user = User::create([
-            'name'                 => $request->firstname . ' ' . $request->lastname,
+            'name'                 => $name,
             'telephone'            => $request->phone,
             'role'                 => $request->user_role,
             'email'                => $request->email,
-            'password'             => Hash::make($request->password),
+            'password'             => $request->password,
             'specialty'            => $request->specialty,
             'license_number'       => $request->license_number,
             'hospital_affiliation' => $request->hospital_affiliation,
