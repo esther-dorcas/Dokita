@@ -144,6 +144,7 @@ Route::middleware(['auth', 'role:medecin'])->prefix('medecin')->name('medecin.')
     Route::get('/planning',     fn() => view('medecin.planning'))->name('planning');
     Route::get('/profil',       fn() => view('medecin.profil'))->name('profil');
     Route::get('/consultation', fn() => view('medecin.consultation'))->name('consultation');
+    Route::get('/ordonnances',  fn() => view('medecin.ordonnance'))->name('ordonnances');
     Route::get('/parametres',   fn() => view('medecin.settings'))->name('settings');
 });
 

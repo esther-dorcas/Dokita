@@ -63,13 +63,21 @@
     .p-stat strong { font-weight: 700; color: #0f172a; }
     .p-stat.alert strong { color: #ef4444; }
 
+    .p-actions { display: flex; gap: 8px; }
     .btn-dossier {
-        display: block; width: 100%; text-align: center;
+        flex: 1; text-align: center;
         background: #f8fafc; border: 1px solid #e2e8f0;
-        padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700;
-        color: #475569; text-decoration: none; transition: .2s;
+        padding: 10px 8px; border-radius: 10px; font-size: 12px; font-weight: 700;
+        color: #475569; text-decoration: none; transition: .2s; display: flex; align-items: center; justify-content: center; gap: 5px;
     }
     .p-card:hover .btn-dossier { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn-ord {
+        flex-shrink: 0; text-align: center;
+        background: #fdf8f6; border: 1px solid #fed7aa;
+        padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 700;
+        color: #c2410c; text-decoration: none; transition: .2s; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;
+    }
+    .btn-ord:hover { background: #c2410c; color: #fff; border-color: #c2410c; }
 
 </style>
 @endpush
@@ -106,7 +114,16 @@
                 <div class="p-stat">Dernière Visite : <strong>Aujourd'hui</strong></div>
                 <div class="p-stat alert">Alerte Méd. : <strong>Allergie Pénicilline</strong></div>
             </div>
-            <a href="{{ route('medecin.consultation', ['name' => 'SOGLO Jean-Paul', 'motif' => 'Ouverture du dossier depuis le répertoire']) }}" class="btn-dossier">Ouvrir le dossier médical</a>
+            <div class="p-actions">
+                <a href="{{ route('medecin.consultation', ['name' => 'SOGLO Jean-Paul', 'motif' => 'Ouverture du dossier depuis le répertoire']) }}" class="btn-dossier">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Dossier médical
+                </a>
+                <a href="{{ route('medecin.ordonnances', ['patient' => 'SOGLO Jean-Paul']) }}" class="btn-ord">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Ordonnance
+                </a>
+            </div>
         </div>
 
         {{-- PATIENT 2 --}}
@@ -123,7 +140,16 @@
                 <div class="p-stat">Dernière Visite : <strong>03 Mars 2026</strong></div>
                 <div class="p-stat">Alerte Méd. : <strong>Asthme (Léger)</strong></div>
             </div>
-            <a href="{{ route('medecin.consultation', ['name' => 'AMADOU Aminata', 'motif' => 'Revue du dossier médical']) }}" class="btn-dossier">Ouvrir le dossier médical</a>
+            <div class="p-actions">
+                <a href="{{ route('medecin.consultation', ['name' => 'AMADOU Aminata', 'motif' => 'Revue du dossier médical']) }}" class="btn-dossier">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Dossier médical
+                </a>
+                <a href="{{ route('medecin.ordonnances', ['patient' => 'AMADOU Aminata']) }}" class="btn-ord">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Ordonnance
+                </a>
+            </div>
         </div>
 
         {{-- PATIENT 3 --}}
@@ -140,7 +166,16 @@
                 <div class="p-stat">Dernière Visite : <strong>15 Fév 2026</strong></div>
                 <div class="p-stat alert">Alerte Méd. : <strong>Diabète Type 2</strong></div>
             </div>
-            <a href="{{ route('medecin.consultation', ['name' => 'DOSSOU Maxime', 'motif' => 'Suivi de maladie chronique']) }}" class="btn-dossier">Ouvrir le dossier médical</a>
+            <div class="p-actions">
+                <a href="{{ route('medecin.consultation', ['name' => 'DOSSOU Maxime', 'motif' => 'Suivi de maladie chronique']) }}" class="btn-dossier">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Dossier médical
+                </a>
+                <a href="{{ route('medecin.ordonnances', ['patient' => 'DOSSOU Maxime']) }}" class="btn-ord">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Ordonnance
+                </a>
+            </div>
         </div>
 
         {{-- PATIENT 4 --}}
@@ -157,7 +192,16 @@
                 <div class="p-stat">Dernière Visite : <strong>Aujourd'hui</strong></div>
                 <div class="p-stat">Alerte Méd. : <strong style="color:#64748b;">Aucune</strong></div>
             </div>
-            <a href="{{ route('medecin.consultation', ['name' => 'KOUASSI Eliane', 'motif' => 'Analyse des nouveaux symptômes']) }}" class="btn-dossier">Ouvrir le dossier médical</a>
+            <div class="p-actions">
+                <a href="{{ route('medecin.consultation', ['name' => 'KOUASSI Eliane', 'motif' => 'Analyse des nouveaux symptômes']) }}" class="btn-dossier">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Dossier médical
+                </a>
+                <a href="{{ route('medecin.ordonnances', ['patient' => 'KOUASSI Eliane']) }}" class="btn-ord">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Ordonnance
+                </a>
+            </div>
         </div>
 
         {{-- PATIENT 5 --}}
@@ -174,7 +218,16 @@
                 <div class="p-stat">Dernière Visite : <strong>Hier</strong></div>
                 <div class="p-stat alert">Alerte Méd. : <strong>Hypertension</strong></div>
             </div>
-            <a href="{{ route('medecin.consultation', ['name' => 'BIO Tchané', 'motif' => 'Suivi post-opératoire']) }}" class="btn-dossier">Ouvrir le dossier médical</a>
+            <div class="p-actions">
+                <a href="{{ route('medecin.consultation', ['name' => 'BIO Tchané', 'motif' => 'Suivi post-opératoire']) }}" class="btn-dossier">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Dossier médical
+                </a>
+                <a href="{{ route('medecin.ordonnances', ['patient' => 'BIO Tchané']) }}" class="btn-ord">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Ordonnance
+                </a>
+            </div>
         </div>
 
         {{-- PATIENT 6 --}}
@@ -191,7 +244,16 @@
                 <div class="p-stat">Dernière Visite : <strong>Il y a 2 jours</strong></div>
                 <div class="p-stat">Alerte Méd. : <strong style="color:#64748b;">Aucune</strong></div>
             </div>
-            <a href="{{ route('medecin.consultation', ['name' => 'DOSSA Clémence', 'motif' => 'Bilan de santé']) }}" class="btn-dossier">Ouvrir le dossier médical</a>
+            <div class="p-actions">
+                <a href="{{ route('medecin.consultation', ['name' => 'DOSSA Clémence', 'motif' => 'Bilan de santé']) }}" class="btn-dossier">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Dossier médical
+                </a>
+                <a href="{{ route('medecin.ordonnances', ['patient' => 'DOSSA Clémence']) }}" class="btn-ord">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Ordonnance
+                </a>
+            </div>
         </div>
 
     </div>

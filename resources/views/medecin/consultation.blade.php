@@ -192,9 +192,17 @@
             <label class="field-label">Diagnostic clinique</label>
             <textarea class="field-input" placeholder="Saisissez le diagnostic établi ici..."></textarea>
 
-            <div class="ord-box">
-                <label class="field-label" style="color:#c2410c;">Prescription / Ordonnance</label>
-                <textarea class="field-input" style="margin-bottom:0; background:#fff; border-color:#fed7aa;" placeholder="- Paracétamol 1000mg : 1 cp 3x/jour..."></textarea>
+            <div class="ord-box" style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                <div>
+                    <div class="field-label" style="color:#c2410c; margin-bottom:4px;">Prescription / Ordonnance</div>
+                    <p style="font-size:12px; color:#92400e; margin:0;">Rédigez et imprimez l'ordonnance pour ce patient.</p>
+                </div>
+                <a href="{{ route('medecin.ordonnances', ['patient' => request('name')]) }}"
+                   style="display:inline-flex; align-items:center; gap:8px; padding:11px 20px; background:#c2410c; color:#fff; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; transition:.2s; flex-shrink:0;"
+                   onmouseover="this.style.background='#9a3412'" onmouseout="this.style.background='#c2410c'">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                    Rédiger l'ordonnance
+                </a>
             </div>
 
             <div class="action-row">
