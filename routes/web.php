@@ -8,9 +8,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\PatientApiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
 use App\Models\Hopital;
 
+// ─── Auth routes (login, register, password reset…) ───────────────────────────
+require __DIR__.'/auth.php';
+
+// ─── Pages publiques ───────────────────────────────────────────────────────────
 Route::get('/', function () {
     $hopitaux = Hopital::query()
         ->whereNotNull('latitude')
@@ -19,14 +22,10 @@ Route::get('/', function () {
     return view('welcome', compact('hopitaux'));
 })->name('home');
 
-Route::get('/professional', function () {
-    return view('professional');
-})->name('professional');
+Route::get('/professional', fn() => view('professional'))->name('professional');
+Route::get('/faq',          fn() => view('faq'))->name('faq');
 
-Route::get('/faq', function () {
-    return view('faq');
-})->name('faq');
-
+// ─── Redirection intelligente après login ──────────────────────────────────────
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if ($user->role === 'medecin') return redirect()->route('medecin.dashboard');
@@ -34,30 +33,27 @@ Route::get('/dashboard', function () {
     return redirect()->route('patient.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// ─── Routes Patient ────────────────────────────────────────────────────────────
+// Middleware auth uniquement (pas role:patient) pour éviter tout blocage après inscription
+Route::middleware(['auth'])->prefix('patient')->name('patient.')->group(function () {
+    Route::get('/dashboard',  [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/historique', function() {
+        $completedRendezVous = collect([]);
+        return view('patient.history', compact('completedRendezVous'));
+    })->name('history');
 });
 
-// Dashboard Patient
-require __DIR__.'/auth.php';
-Route::middleware(['auth'])->get('/patient/dashboard', [DashboardController::class, 'patient'])->name('patient.dashboard');
-
-// Dashboard Médecin
-Route::get('/medecin/dashboard', function () {
-    return view('medecin.dashboard');
-})->middleware(['auth', 'role:medecin'])->name('medecin.dashboard');
-
-// Dashboard Hôpital
-Route::get('/hopital/dashboard', function () {
-    return view('hopital.dashboard');
-})->middleware(['auth', 'role:hopital'])->name('hopital.dashboard');
-
+// ─── Routes communes authentifiées ────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
+    Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/profil', fn() => view('patient.profil'))->name('profil.index');
+
     // Hôpitaux
-    Route::get('/hopitaux',       [HopitalController::class, 'index'])->name('hopitaux.index');
-    Route::get('/hopitaux/{id}',  [HopitalController::class, 'show'])->name('hopitaux.show');
+    Route::get('/hopitaux',      [HopitalController::class, 'index'])->name('hopitaux.index');
+    Route::get('/hopitaux/{id}', [HopitalController::class, 'show'])->name('hopitaux.show');
 
     // Rendez-vous
     Route::get('/prendre-rdv',       [RendezvousController::class, 'create'])->name('rdv.create');
@@ -69,37 +65,31 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/urgence',  [UrgenceController::class, 'create'])->name('urgence.create');
     Route::post('/urgence', [UrgenceController::class, 'store'])->name('urgence.store');
 });
-// Routes Hôpital
+
+// ─── Routes Hôpital ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:hopital'])->prefix('hopital')->name('hopital.')->group(function () {
-    Route::get('/dashboard',   fn() => view('hopital.dashboard'))->name('dashboard');
-    Route::get('/rdv',         fn() => view('hopital.rdv'))->name('rdv');
-    Route::get('/medecins',    fn() => view('hopital.medecins'))->name('medecins');
+    Route::get('/dashboard',        fn() => view('hopital.dashboard'))->name('dashboard');
+    Route::get('/rdv',              fn() => view('hopital.rdv'))->name('rdv');
+    Route::get('/medecins',         fn() => view('hopital.medecins'))->name('medecins');
     Route::get('/medecins/ajouter', fn() => view('hopital.medecins-create'))->name('medecins.create');
-    Route::get('/urgences',    fn() => view('hopital.urgences'))->name('urgences');
-    Route::get('/parametres',  fn() => view('hopital.parametres'))->name('parametres');
+    Route::get('/urgences',         fn() => view('hopital.urgences'))->name('urgences');
+    Route::get('/parametres',       fn() => view('hopital.parametres'))->name('parametres');
 });
-// Routes Médecin
+
+// ─── Routes Médecin ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:medecin'])->prefix('medecin')->name('medecin.')->group(function () {
-    Route::get('/dashboard', fn() => view('medecin.dashboard'))->name('dashboard');
-    Route::get('/rdv',       fn() => view('medecin.rdv'))->name('rdv');
-    Route::get('/planning',  fn() => view('medecin.planning'))->name('planning');
-    Route::get('/profil',    fn() => view('medecin.profil'))->name('profil');
+    Route::get('/dashboard',    fn() => view('medecin.dashboard'))->name('dashboard');
+    Route::get('/rdv',          fn() => view('medecin.rdv'))->name('rdv');
+    Route::get('/planning',     fn() => view('medecin.planning'))->name('planning');
+    Route::get('/profil',       fn() => view('medecin.profil'))->name('profil');
+    Route::get('/consultation', fn() => view('medecin.consultation'))->name('consultation');
+    Route::get('/parametres',   fn() => view('medecin.settings'))->name('settings');
 });
 
-// Routes Patient
-Route::middleware(['auth', 'role:patient'])->prefix('patient')->name('patient.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'patient'])->name('dashboard');
-});
-
-// API Routes Patient
+// ─── API Routes Patient ────────────────────────────────────────────────────────
 Route::middleware(['auth'])->prefix('api/patient')->name('api.patient.')->group(function () {
-    Route::get('/dashboard', [PatientApiController::class, 'dashboard'])->name('dashboard');
-    Route::get('/rendez-vous', [PatientApiController::class, 'rendezVous'])->name('rendezvous');
-    Route::get('/notifications', [PatientApiController::class, 'notifications'])->name('notifications');
-    Route::post('/notifications/{id}/read', [PatientApiController::class, 'markNotificationAsRead'])->name('notifications.read');
-});
-
-// Routes communes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/profil', fn() => view('patient.profil'))->name('profil.index');
+    Route::get('/dashboard',                 [PatientApiController::class, 'dashboard'])->name('dashboard');
+    Route::get('/rendez-vous',               [PatientApiController::class, 'rendezVous'])->name('rendezvous');
+    Route::get('/notifications',             [PatientApiController::class, 'notifications'])->name('notifications');
+    Route::post('/notifications/{id}/read',  [PatientApiController::class, 'markNotificationAsRead'])->name('notifications.read');
 });

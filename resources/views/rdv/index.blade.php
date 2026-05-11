@@ -1,90 +1,461 @@
 @extends('layouts.dokita')
 
 @section('title', 'Mes rendez-vous — Dokita')
-@section('page-title', 'Suivez vos consultations')
-@section('page-subtitle', 'Gérez vos réservations et consultez les détails de vos prochains rendez-vous.')
+
+@push('head')
+<style>
+    :root { --radius-xl: 20px; --radius-lg: 14px; --blue: #2563eb; }
+
+    @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .animate-up { animation: slideUp .45s ease-out; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+        display: flex; align-items: flex-start;
+        justify-content: space-between; gap: 16px;
+        margin-bottom: 24px;
+    }
+    .page-header h1 { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; }
+    .page-header p  { font-size: 13px; color: #64748b; margin-top: 3px; }
+    .btn-new-rdv {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: var(--blue); color: #fff;
+        padding: 10px 18px; border-radius: 10px;
+        font-size: 12px; font-weight: 700;
+        text-decoration: none; transition: .15s; flex-shrink: 0;
+    }
+    .btn-new-rdv:hover { background: #1d4ed8; color: #fff; }
+
+    /* ── STATS ── */
+    .rdv-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 12px; margin-bottom: 24px;
+    }
+    .rs {
+        background: #fff; border: 1px solid #e8edf5;
+        border-radius: var(--radius-lg); padding: 16px 18px;
+        display: flex; align-items: center; gap: 14px; transition: .2s;
+    }
+    .rs:hover { border-color: #bfdbfe; box-shadow: 0 4px 16px rgba(37,99,235,.06); }
+    .rs-icon {
+        width: 42px; height: 42px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .rs-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .6px; }
+    .rs-val   { font-size: 22px; font-weight: 800; color: #0f172a; margin-top: 2px; line-height: 1; }
+
+    /* ── NEXT RDV BANNER ── */
+    .next-banner {
+        background: #0c2340; border-radius: var(--radius-xl);
+        padding: 26px 28px; color: #fff;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .next-banner::before {
+        content: ""; position: absolute;
+        top: -50px; right: -50px;
+        width: 200px; height: 200px;
+        border-radius: 50%; background: rgba(37,99,235,.2);
+    }
+    .next-banner::after {
+        content: ""; position: absolute;
+        bottom: -60px; right: 100px;
+        width: 140px; height: 140px;
+        border-radius: 50%; background: rgba(37,99,235,.1);
+    }
+    .nb-left  { position: relative; z-index: 2; }
+    .nb-right { position: relative; z-index: 2; display: flex; align-items: center; gap: 16px; }
+    .nb-tag {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.12);
+        padding: 3px 10px; border-radius: 20px;
+        font-size: 10px; font-weight: 700; color: #93c5fd;
+        margin-bottom: 10px;
+    }
+    .nb-dot { width: 5px; height: 5px; border-radius: 50%; background: #22d3ee; animation: pulse 2s infinite; }
+    .nb-doc  { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .nb-meta { font-size: 12px; color: rgba(255,255,255,.5); }
+    .nb-time-box {
+        text-align: right;
+    }
+    .nb-time  { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .nb-date  { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.4); text-transform: uppercase; margin-top: 3px; }
+    .nb-icon  {
+        width: 56px; height: 56px; background: rgba(255,255,255,.08);
+        border-radius: 14px; display: flex; align-items: center;
+        justify-content: center;
+    }
+
+    /* ── TABS ── */
+    .rdv-tabs {
+        display: flex; gap: 6px; background: #f1f5f9;
+        padding: 5px; border-radius: 12px;
+        margin-bottom: 20px; width: fit-content;
+    }
+    .rdv-tab {
+        padding: 8px 20px; border-radius: 9px;
+        font-size: 13px; font-weight: 600; color: #64748b;
+        text-decoration: none; transition: .2s; cursor: pointer; border: none;
+        background: transparent;
+    }
+    .rdv-tab.active {
+        background: #fff; color: var(--blue);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    /* ── RDV CARDS ── */
+    .rdv-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .rdv-card {
+        background: #fff; border-radius: var(--radius-xl);
+        border: 1px solid #e8edf5;
+        display: grid; grid-template-columns: 80px 1fr auto;
+        align-items: center; gap: 20px; padding: 20px 22px;
+        transition: .25s;
+    }
+    .rdv-card:hover {
+        border-color: #bfdbfe;
+        box-shadow: 0 8px 28px rgba(37,99,235,.07);
+        transform: translateY(-2px);
+    }
+    .rdv-card.annule { opacity: .65; }
+
+    .rdv-date-box {
+        width: 80px; height: 88px; background: #f8fafc;
+        border-radius: 14px; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        border: 1px solid #f1f5f9; flex-shrink: 0;
+    }
+    .rdv-day   { font-size: 26px; font-weight: 900; color: #0f172a; line-height: 1; }
+    .rdv-month { font-size: 10px; font-weight: 800; color: var(--blue); text-transform: uppercase; margin-top: 4px; }
+    .rdv-year  { font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 1px; }
+
+    .rdv-info-col h3 {
+        font-size: 16px; font-weight: 800; color: #0f172a;
+        margin: 0 0 6px;
+    }
+    .rdv-meta-row {
+        display: flex; align-items: center; gap: 5px;
+        font-size: 12px; color: #64748b; margin-bottom: 3px;
+    }
+    .rdv-meta-row svg { flex-shrink: 0; }
+
+    .rdv-badges { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .rdv-status {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 11px; font-weight: 700;
+        padding: 4px 10px; border-radius: 20px;
+    }
+    .s-conf    { background: #f0fdf4; color: #166534; }
+    .s-att     { background: #eff6ff; color: #1e40af; }
+    .s-ann     { background: #fef2f2; color: #991b1b; }
+    .s-termine { background: #f8fafc; color: #475569; }
+    .rdv-time-pill {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 11px; font-weight: 700; color: #475569;
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        padding: 3px 9px; border-radius: 20px;
+    }
+
+    .rdv-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .btn-act {
+        width: 38px; height: 38px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid #e2e8f0; background: #fff;
+        color: #64748b; cursor: pointer; transition: .15s;
+        text-decoration: none;
+    }
+    .btn-act:hover         { background: #f1f5f9; color: #0f172a; }
+    .btn-act.danger:hover  { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+        text-align: center; padding: 60px 20px;
+        background: #fff; border-radius: var(--radius-xl);
+        border: 1.5px dashed #e2e8f0;
+    }
+    .empty-icon {
+        width: 64px; height: 64px; background: #eff6ff;
+        border-radius: 16px; display: flex; align-items: center;
+        justify-content: center; margin: 0 auto 18px;
+    }
+    .empty-state h3 { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+    .empty-state p  { font-size: 13px; color: #64748b; }
+    .empty-state a  { font-size: 13px; font-weight: 700; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 14px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+        .rdv-card  { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+        .rdv-stats { grid-template-columns: 1fr; }
+        .next-banner { flex-direction: column; gap: 20px; }
+        .nb-right { justify-content: center; }
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="space-y-6">
+<div class="animate-up">
 
-    <!-- En-tête -->
-    <div class="flex items-center justify-between mb-8">
-        <div></div>
-        <a href="{{ route('hopitaux.index') }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-medical-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-medical-700 shadow-lg shadow-medical-600/30 flex-shrink-0">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    {{-- ══ PAGE HEADER ══ --}}
+    <div class="page-header">
+        <div>
+            <h1>Mes rendez-vous</h1>
+            <p>Gérez vos consultations et le suivi de votre parcours.</p>
+        </div>
+        <a href="{{ route('hopitaux.index') }}" class="btn-new-rdv">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
             Nouveau RDV
         </a>
     </div>
 
-    <!-- Liste des rendez-vous -->
-    @forelse($rendezVous as $rdv)
+    {{-- ══ STATS ══ --}}
+    <div class="rdv-stats">
+        <div class="rs">
+            <div class="rs-icon" style="background:#eff6ff">
+                <svg width="20" height="20" fill="none" stroke="#1d4ed8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="rs-label">Total</div>
+                <div class="rs-val">{{ $rendezVous->count() }}</div>
+            </div>
+        </div>
+        <div class="rs">
+            <div class="rs-icon" style="background:#f0fdf4">
+                <svg width="20" height="20" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="rs-label">Confirmés</div>
+                <div class="rs-val">{{ $rendezVous->where('statut', 'confirme')->count() }}</div>
+            </div>
+        </div>
+        <div class="rs">
+            <div class="rs-icon" style="background:#fff7ed">
+                <svg width="20" height="20" fill="none" stroke="#c2410c" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="rs-label">En attente</div>
+                <div class="rs-val">{{ $rendezVous->where('statut', 'en_attente')->count() }}</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ══ NEXT RDV BANNER ══ --}}
+    @php
+        $nextRdv = $rendezVous
+            ->whereIn('statut', ['confirme', 'en_attente'])
+            ->where('date_heure', '>', now())
+            ->sortBy('date_heure')
+            ->first();
+    @endphp
+
+    @if($nextRdv)
+    <div class="next-banner">
+        <div class="nb-left">
+            <div class="nb-tag">
+                <span class="nb-dot"></span> Rendez-vous imminent
+            </div>
+            <div class="nb-doc">Dr. {{ $nextRdv->medecin->user->name }}</div>
+            <div class="nb-meta">
+                {{ $nextRdv->date_heure->diffForHumans() }}
+                @if($nextRdv->medecin->hopital)
+                    &nbsp;·&nbsp; {{ $nextRdv->medecin->hopital->nom }}
+                @endif
+                @if($nextRdv->motif)
+                    &nbsp;·&nbsp; {{ $nextRdv->motif }}
+                @endif
+            </div>
+        </div>
+        <div class="nb-right">
+            <div class="nb-time-box">
+                <div class="nb-time">{{ $nextRdv->date_heure->format('H:i') }}</div>
+                <div class="nb-date">{{ $nextRdv->date_heure->translatedFormat('D d M') }}</div>
+            </div>
+            <div class="nb-icon">
+                <svg width="26" height="26" fill="none" stroke="rgba(255,255,255,.6)" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══ TABS ══ --}}
+    <div class="rdv-tabs" id="rdvTabs">
+        <button class="rdv-tab active" onclick="filterRdv('tous', this)">Tous</button>
+        <button class="rdv-tab" onclick="filterRdv('avenir', this)">À venir</button>
+        <button class="rdv-tab" onclick="filterRdv('passes', this)">Passés</button>
+        <button class="rdv-tab" onclick="filterRdv('annule', this)">Annulés</button>
+    </div>
+
+    {{-- ══ LISTE DES RDV ══ --}}
+    <div class="rdv-list" id="rdvList">
+
+        @forelse($rendezVous->sortByDesc('date_heure') as $rdv)
         @php
-            $statut = $rdv->statut;
-            $borderClass = match($statut) {
-                'confirme' => 'border-l-green-500',
-                'en_attente' => 'border-l-blue-500',
-                default => 'border-l-red-500'
+            $isPast    = $rdv->date_heure->isPast();
+            $isCancelled = $rdv->statut === 'annule';
+            $statusClass = match($rdv->statut) {
+                'confirme'   => 's-conf',
+                'en_attente' => 's-att',
+                'annule'     => 's-ann',
+                'termine'    => 's-termine',
+                default      => 's-att',
             };
-            $badgeClass = match($statut) {
-                'confirme' => 'bg-green-50 text-green-700 border border-green-200',
-                'en_attente' => 'bg-blue-50 text-blue-700 border border-blue-200',
-                default => 'bg-red-50 text-red-700 border border-red-200'
-            };
-            $badgeLabel = match($statut) {
-                'confirme' => '✓ Confirmé',
-                'en_attente' => '⏳ En attente',
-                default => '✕ Annulé'
-            };
-            $iconBg = match($statut) {
-                'confirme' => 'bg-green-100 text-green-600',
-                'en_attente' => 'bg-blue-100 text-blue-600',
-                default => 'bg-red-100 text-red-600'
+            $statusLabel = match($rdv->statut) {
+                'confirme'   => 'Confirmé',
+                'en_attente' => 'En attente',
+                'annule'     => 'Annulé',
+                'termine'    => 'Terminé',
+                default      => $rdv->statut,
             };
         @endphp
-        <article class="rounded-3xl border border-slate-100 border-l-[6px] {{ $borderClass }} bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1">
-            <div class="grid gap-6 sm:grid-cols-[1fr_auto]">
-                <div class="flex items-start gap-5">
-                    <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl {{ $iconBg }} text-2xl shadow-inner">🩺</div>
-                    <div class="space-y-1.5">
-                        <p class="text-xs font-bold uppercase tracking-widest text-medical-600">{{ $rdv->medecin->specialite ?? 'Consultation' }}</p>
-                        <h2 class="text-xl font-bold text-slate-900">Dr. {{ $rdv->medecin->user->name ?? 'Médecin' }}</h2>
-                        <p class="flex items-center gap-2 text-sm text-slate-500 font-medium mt-2">
-                            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            {{ $rdv->date_heure->isoFormat('dddd D MMMM YYYY [à] HH:mm') }}
-                        </p>
-                        <p class="flex items-center gap-2 text-sm text-slate-500 font-medium">
-                            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                            {{ $rdv->medecin->hopital->nom ?? 'Hôpital inconnu' }}
-                        </p>
-                    </div>
+
+        <div class="rdv-card {{ $isCancelled ? 'annule' : '' }}"
+             data-statut="{{ $rdv->statut }}"
+             data-period="{{ $isPast ? 'passes' : 'avenir' }}">
+
+            {{-- DATE BOX --}}
+            <div class="rdv-date-box">
+                <span class="rdv-day">{{ $rdv->date_heure->format('d') }}</span>
+                <span class="rdv-month">{{ $rdv->date_heure->translatedFormat('M') }}</span>
+                <span class="rdv-year">{{ $rdv->date_heure->format('Y') }}</span>
+            </div>
+
+            {{-- INFO --}}
+            <div class="rdv-info-col">
+                <h3>Dr. {{ $rdv->medecin->user->name }}</h3>
+
+                @if($rdv->medecin->hopital)
+                <div class="rdv-meta-row">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    {{ $rdv->medecin->hopital->nom }}
                 </div>
-                <div class="flex flex-col items-start sm:items-end justify-between gap-4">
-                    <span class="rounded-full px-4 py-1.5 text-xs font-bold {{ $badgeClass }} shadow-sm">{{ $badgeLabel }}</span>
-                    @if($rdv->statut !== 'annule')
-                        <form method="POST" action="{{ route('rdv.annuler', $rdv->id) }}" class="w-full sm:w-auto">
-                            @csrf
-                            <button type="submit"
-                                class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-50 hover:border-red-300">
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                Annuler
-                            </button>
-                        </form>
+                @endif
+
+                @if($rdv->medecin->specialite)
+                <div class="rdv-meta-row">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    {{ $rdv->medecin->specialite }}
+                </div>
+                @endif
+
+                <div class="rdv-badges">
+                    <span class="rdv-status {{ $statusClass }}">
+                        <span style="width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6"></span>
+                        {{ $statusLabel }}
+                    </span>
+                    <span class="rdv-time-pill">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ $rdv->date_heure->format('H:i') }}
+                    </span>
+                    @if($rdv->motif)
+                    <span style="font-size:11px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;padding:3px 9px;border-radius:20px">
+                        {{ $rdv->motif }}
+                    </span>
                     @endif
                 </div>
             </div>
-        </article>
-    @empty
-        <div class="rounded-3xl border border-slate-100 bg-white p-16 text-center shadow-sm">
-            <div class="text-5xl mb-4">📅</div>
-            <p class="text-xl font-bold text-slate-900">Aucun rendez-vous trouvé</p>
-            <p class="mt-2 text-sm font-medium text-slate-500">Réservez votre premier rendez-vous pour le voir apparaître ici.</p>
-            <a href="{{ route('hopitaux.index') }}"
-                class="mt-8 inline-flex items-center gap-2 rounded-xl bg-medical-600 px-8 py-3 text-sm font-bold text-white transition hover:bg-medical-700 shadow-lg shadow-medical-600/30">
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Réserver maintenant
-            </a>
+
+            {{-- ACTIONS --}}
+            <div class="rdv-actions">
+                @if(!$isCancelled && !$isPast)
+                <form method="POST" action="{{ route('rdv.annuler', $rdv->id) }}"
+                      onsubmit="return confirm('Annuler ce rendez-vous ?')">
+                    @csrf
+                    <button type="submit" class="btn-act danger" title="Annuler">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </form>
+                @endif
+                <a href="{{ route('rdv.index') }}" class="btn-act" title="Détails">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
         </div>
-    @endforelse
+
+        @empty
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="28" height="28" fill="none" stroke="#1d4ed8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <h3>Aucun rendez-vous</h3>
+            <p>C'est le moment idéal pour planifier votre prochain bilan.</p>
+            <a href="{{ route('hopitaux.index') }}">Parcourir les hôpitaux →</a>
+        </div>
+        @endforelse
+
+    </div>
 </div>
+
+@push('scripts')
+<script>
+function filterRdv(filter, btn) {
+    document.querySelectorAll('.rdv-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.rdv-card').forEach(card => {
+        const statut = card.dataset.statut;
+        const period = card.dataset.period;
+        let show = false;
+        if (filter === 'tous')   show = true;
+        if (filter === 'avenir') show = period === 'avenir' && statut !== 'annule';
+        if (filter === 'passes') show = period === 'passes' && statut !== 'annule';
+        if (filter === 'annule') show = statut === 'annule';
+        card.style.display = show ? '' : 'none';
+    });
+
+    const visible = [...document.querySelectorAll('.rdv-card')].filter(c => c.style.display !== 'none');
+    const empty   = document.getElementById('emptyFilter');
+    if (visible.length === 0 && !empty) {
+        const div = document.createElement('div');
+        div.id = 'emptyFilter';
+        div.className = 'empty-state';
+        div.innerHTML = `
+            <div class="empty-icon">
+                <svg width="28" height="28" fill="none" stroke="#1d4ed8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <h3>Aucun rendez-vous dans cette catégorie</h3>
+        `;
+        document.getElementById('rdvList').appendChild(div);
+    } else if (visible.length > 0 && empty) {
+        empty.remove();
+    }
+}
+</script>
+@endpush
+
 @endsection

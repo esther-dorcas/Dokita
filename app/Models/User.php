@@ -24,6 +24,9 @@ class User extends Authenticatable
         'role',
         'email',
         'password',
+        'specialty',
+        'license_number',
+        'hospital_affiliation',
     ];
 
     /**
@@ -58,6 +61,11 @@ class User extends Authenticatable
     public function hopital()
     {
         return $this->hasOne(Hopital::class);
+    }
+
+    public function patient()
+    {
+        return $this->hasOne(Patient::class);
     }
 
     public function rendezVous()

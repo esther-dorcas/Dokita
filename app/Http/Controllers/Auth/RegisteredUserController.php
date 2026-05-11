@@ -28,28 +28,42 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-   public function store(Request $request): RedirectResponse
-{
-    $request->validate([
-        'name'      => ['required', 'string', 'max:255'],
-        'telephone' => ['required', 'string', 'max:20'],
-        'role'      => ['required', 'in:patient,medecin,hopital'],
-        'email'     => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        'password'  => ['required', 'confirmed', Rules\Password::defaults()],
-    ]);
+    public function store(Request $request): RedirectResponse
+    {
+        // On adapte le rôle si c'est 'praticien' pour correspondre à 'medecin' dans la DB
+        if ($request->user_role === 'praticien') {
+            $request->merge(['user_role' => 'medecin']);
+        }
 
-    $user = User::create([
-        'name'      => $request->name,
-        'telephone' => $request->telephone,
-        'role'      => $request->role,
-        'email'     => $request->email,
-        'password'  => Hash::make($request->password),
-    ]);
+        $request->validate([
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname'  => ['required', 'string', 'max:255'],
+            'phone'     => ['required', 'string', 'max:20'],
+            'user_role' => ['required', 'in:patient,medecin,hopital'],
+            'email'     => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password'  => ['required', Rules\Password::defaults()],
+        ]);
 
-    event(new Registered($user));
+        $user = User::create([
+            'name'                 => $request->firstname . ' ' . $request->lastname,
+            'telephone'            => $request->phone,
+            'role'                 => $request->user_role,
+            'email'                => $request->email,
+            'password'             => Hash::make($request->password),
+            'specialty'            => $request->specialty,
+            'license_number'       => $request->license_number,
+            'hospital_affiliation' => $request->hospital_affiliation,
+        ]);
 
-    Auth::login($user);
+        event(new Registered($user));
 
-    return redirect(route('dashboard', absolute: false));
-}
+        Auth::login($user);
+
+        // Redirection directe selon le rôle
+        return match($user->role) {
+            'medecin' => redirect()->route('medecin.dashboard'),
+            'hopital' => redirect()->route('hopital.dashboard'),
+            default   => redirect()->route('patient.dashboard'),
+        };
+    }
 }
