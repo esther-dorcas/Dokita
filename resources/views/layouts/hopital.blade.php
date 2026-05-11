@@ -143,5 +143,37 @@
 </div>
 
 @stack('scripts')
+<script>
+    // SYSTÈME D'ALERTE EN TEMPS RÉEL (Polling)
+    let lastUrgenceCount = -1;
+    
+    // Vérifier toutes les 3 secondes
+    setInterval(function() {
+        fetch('{{ route("hopital.api.urgences.count") }}')
+            .then(response => response.json())
+            .then(count => {
+                if (lastUrgenceCount !== -1 && count > lastUrgenceCount) {
+                    // Jouer un son d'alerte (optionnel, certains navigateurs bloquent)
+                    try {
+                        let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                        audio.play();
+                    } catch(e) {}
+
+                    // Afficher la notification et rediriger
+                    alert("⚠️ ALERTE ROUGE : NOUVELLE URGENCE DÉTECTÉE !\n\nUn patient vient de déclencher une alerte de détresse.");
+                    
+                    // Si on n'est pas déjà sur la page des urgences, on y va
+                    if(window.location.pathname.indexOf('/urgences') === -1) {
+                        window.location.href = '{{ route("hopital.urgences") }}';
+                    } else {
+                        // Sinon on recharge juste la page pour afficher la nouvelle urgence
+                        window.location.reload();
+                    }
+                }
+                lastUrgenceCount = count;
+            })
+            .catch(err => console.error("Erreur polling:", err));
+    }, 3000);
+</script>
 </body>
 </html>
