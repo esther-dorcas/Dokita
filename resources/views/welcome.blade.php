@@ -617,5 +617,217 @@ document.addEventListener('DOMContentLoaded',function(){
     if(bounds.length)map.fitBounds(bounds,{padding:[20,20]});
 });
 </script>
+
+{{-- ══ BOUTON SOS FLOTTANT ══ --}}
+<style>
+    /* Bouton flottant */
+    #sos-btn {
+        position: fixed; bottom: 28px; right: 28px; z-index: 1000;
+        width: 64px; height: 64px; border-radius: 50%;
+        background: #dc2626; border: none; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        box-shadow: 0 4px 20px rgba(220,38,38,.5);
+        transition: transform .2s, box-shadow .2s;
+    }
+    #sos-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(220,38,38,.65); }
+    #sos-btn::before {
+        content: '';
+        position: absolute; inset: -6px; border-radius: 50%;
+        border: 3px solid rgba(220,38,38,.4);
+        animation: sos-pulse 1.8s ease-out infinite;
+    }
+    @keyframes sos-pulse {
+        0%   { transform: scale(1);   opacity: 1; }
+        100% { transform: scale(1.55); opacity: 0; }
+    }
+    #sos-btn span { font-size: 11px; font-weight: 900; color: #fff; letter-spacing: .05em; line-height: 1; }
+
+    /* Overlay */
+    #sos-overlay {
+        display: none; position: fixed; inset: 0; z-index: 1100;
+        background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+        align-items: center; justify-content: center; padding: 16px;
+    }
+    #sos-overlay.open { display: flex; }
+
+    /* Modal */
+    #sos-modal {
+        background: #fff; border-radius: 24px; width: 100%; max-width: 480px;
+        box-shadow: 0 30px 80px rgba(0,0,0,.3);
+        animation: modal-in .25s cubic-bezier(.2,.8,.2,1);
+        overflow: hidden;
+    }
+    @keyframes modal-in { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:none; } }
+
+    .sos-head {
+        background: #dc2626; padding: 22px 24px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .sos-head-title { display: flex; align-items: center; gap: 10px; }
+    .sos-head-title svg { color: #fff; }
+    .sos-head-title h2 { font-size: 18px; font-weight: 900; color: #fff; margin: 0; }
+    .sos-head-title p  { font-size: 12px; color: rgba(255,255,255,.75); margin: 2px 0 0; }
+    .sos-close { background: rgba(255,255,255,.2); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
+    .sos-close:hover { background: rgba(255,255,255,.35); }
+
+    .sos-body { padding: 24px; }
+    .sos-field { margin-bottom: 14px; }
+    .sos-label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 5px; }
+    .sos-input {
+        width: 100%; padding: 11px 13px; border: 1.5px solid #e2e8f0;
+        border-radius: 10px; font-size: 13px; font-weight: 600; color: #0f172a;
+        background: #f8fafc; outline: none; font-family: inherit; transition: .15s; box-sizing: border-box;
+    }
+    .sos-input:focus { background: #fff; border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.1); }
+    textarea.sos-input { resize: none; min-height: 90px; }
+
+    .sos-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .sos-loc {
+        display: flex; align-items: center; gap: 8px; padding: 10px 13px;
+        background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 10px;
+        font-size: 12px; font-weight: 700; color: #c2410c; cursor: pointer;
+        transition: .15s; margin-bottom: 14px;
+    }
+    .sos-loc:hover { background: #ffedd5; }
+
+    .sos-submit {
+        width: 100%; padding: 14px; border: none; border-radius: 12px;
+        background: #dc2626; color: #fff; font-size: 14px; font-weight: 800;
+        cursor: pointer; transition: .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        font-family: inherit;
+    }
+    .sos-submit:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(220,38,38,.35); }
+    .sos-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Succès */
+    #sos-success { display: none; padding: 32px 24px; text-align: center; }
+    #sos-success.show { display: block; }
+    #sos-success .check { width: 60px; height: 60px; border-radius: 50%; background: #f0fdf4; border: 2px solid #bbf7d0; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+</style>
+
+{{-- Bouton --}}
+<button id="sos-btn" onclick="document.getElementById('sos-overlay').classList.add('open')" aria-label="Signaler une urgence médicale">
+    <svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+    <span>SOS</span>
+</button>
+
+{{-- Overlay + Modal --}}
+<div id="sos-overlay" onclick="if(event.target===this)closeSos()">
+    <div id="sos-modal">
+
+        {{-- En-tête rouge --}}
+        <div class="sos-head">
+            <div class="sos-head-title">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                <div>
+                    <h2>Signaler une urgence</h2>
+                    <p>Votre demande sera transmise immédiatement</p>
+                </div>
+            </div>
+            <button class="sos-close" onclick="closeSos()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        {{-- Formulaire --}}
+        <div id="sos-form-wrap">
+            <div class="sos-body">
+                <form id="sos-form">
+                    @csrf
+                    <div class="sos-row">
+                        <div class="sos-field">
+                            <label class="sos-label">Votre nom <span style="color:#dc2626">*</span></label>
+                            <input class="sos-input" type="text" name="nom_appelant" placeholder="Ex : Jean SOGLO" required>
+                        </div>
+                        <div class="sos-field">
+                            <label class="sos-label">Téléphone <span style="color:#dc2626">*</span></label>
+                            <input class="sos-input" type="tel" name="telephone" placeholder="+229 97 XX XX XX" required>
+                        </div>
+                    </div>
+
+                    <div class="sos-field">
+                        <label class="sos-label">Description de l'urgence <span style="color:#dc2626">*</span></label>
+                        <textarea class="sos-input" name="description" placeholder="Décrivez rapidement la situation : symptômes, nombre de personnes concernées…" required></textarea>
+                    </div>
+
+                    <button type="button" class="sos-loc" onclick="detectLocation()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                        <span id="loc-text">Détecter ma position automatiquement</span>
+                    </button>
+                    <input type="hidden" name="localisation" id="sos-localisation">
+                    <input type="hidden" name="latitude"     id="sos-lat">
+                    <input type="hidden" name="longitude"    id="sos-lng">
+
+                    <button type="submit" class="sos-submit" id="sos-submit-btn">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                        Envoyer l'alerte d'urgence
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{-- Message de succès --}}
+        <div id="sos-success">
+            <div class="check">
+                <svg width="28" height="28" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 style="font-size:18px; font-weight:900; color:#0f172a; margin-bottom:8px;">Alerte envoyée !</h3>
+            <p style="font-size:13px; color:#64748b; line-height:1.6; max-width:320px; margin:0 auto 20px;">Votre signalement a bien été transmis. Les services médicaux vont vous contacter rapidement.</p>
+            <p style="font-size:12px; font-weight:700; color:#dc2626;">En cas de danger immédiat, appelez le <strong>116</strong> (SAMU Bénin)</p>
+            <button onclick="closeSos()" style="margin-top:20px; padding:10px 24px; border-radius:10px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:700; color:#475569; cursor:pointer;">Fermer</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function closeSos() {
+    document.getElementById('sos-overlay').classList.remove('open');
+    // reset
+    document.getElementById('sos-form').reset();
+    document.getElementById('sos-form-wrap').style.display = '';
+    document.getElementById('sos-success').classList.remove('show');
+    document.getElementById('loc-text').textContent = 'Détecter ma position automatiquement';
+}
+
+function detectLocation() {
+    if (!navigator.geolocation) return;
+    document.getElementById('loc-text').textContent = 'Localisation en cours…';
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        document.getElementById('sos-lat').value = pos.coords.latitude;
+        document.getElementById('sos-lng').value = pos.coords.longitude;
+        document.getElementById('sos-localisation').value = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5);
+        document.getElementById('loc-text').textContent = '✓ Position détectée';
+    }, function() {
+        document.getElementById('loc-text').textContent = 'Position non disponible';
+    });
+}
+
+document.getElementById('sos-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('sos-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours…';
+
+    const data = new FormData(this);
+    fetch('{{ route('urgence.publique') }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+        body: data
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            document.getElementById('sos-form-wrap').style.display = 'none';
+            document.getElementById('sos-success').classList.add('show');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Envoyer l\'alerte d\'urgence';
+    });
+});
+</script>
 </body>
 </html>

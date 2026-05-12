@@ -36,39 +36,101 @@
         box-shadow: 0 10px 30px rgba(0,0,0,.02);
     }
 
-    /* Override FullCalendar Design pour le rendre Premium */
+    /* ── RESET TAILWIND CONFLICTS ── */
+    /* Tailwind préflight casse les tables et les grilles FullCalendar */
+    #calendar table  { display: table !important; width: 100% !important; border-collapse: separate !important; }
+    #calendar thead  { display: table-header-group !important; }
+    #calendar tbody  { display: table-row-group !important; }
+    #calendar tr     { display: table-row !important; }
+    #calendar th,
+    #calendar td     { display: table-cell !important; }
+
+    /* Corrections pour le timegrid (vue Semaine / Jour) */
+    .fc-timegrid-slot         { height: 40px !important; }
+    .fc-timegrid-slot-label   { font-size: 11px !important; font-weight: 700 !important; color: #94a3b8 !important; vertical-align: middle !important; padding: 0 8px !important; white-space: nowrap !important; }
+    .fc-timegrid-axis         { width: 60px !important; }
+    .fc-timegrid-col          { min-width: 80px !important; }
+    .fc-timegrid-body         { overflow: visible !important; }
+    .fc-scroller              { overflow-y: auto !important; }
+    .fc-scroller-harness      { overflow: visible !important; }
+
+    /* ── OVERRIDE FULLCALENDAR DESIGN ── */
     .fc { font-family: 'Inter', sans-serif !important; }
-    .fc .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 800 !important; color: #0f172a; text-transform: capitalize; }
-    
-    .fc .fc-button-primary {
+    .fc .fc-toolbar { margin-bottom: 20px !important; flex-wrap: wrap; gap: 8px; }
+    .fc .fc-toolbar-title { font-size: 1.2rem !important; font-weight: 800 !important; color: #0f172a !important; text-transform: capitalize; }
+
+    .fc .fc-button {
         background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1.5px solid #e2e8f0 !important;
         color: #475569 !important;
         font-weight: 700 !important;
+        font-size: 12px !important;
         text-transform: capitalize !important;
         box-shadow: none !important;
         border-radius: 8px !important;
-        transition: 0.2s;
+        padding: 6px 12px !important;
+        transition: all .15s !important;
         margin: 0 2px !important;
+        cursor: pointer !important;
     }
-    .fc .fc-button-primary:hover { background: #e2e8f0 !important; color: #0f172a !important; }
-    .fc .fc-button-primary:not(:disabled).fc-button-active, 
-    .fc .fc-button-primary:not(:disabled):active {
+    .fc .fc-button:hover   { background: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+    .fc .fc-button:focus   { box-shadow: 0 0 0 3px rgba(37,99,235,.15) !important; }
+    .fc .fc-button-active,
+    .fc .fc-button:not(:disabled):active {
         background: var(--blue) !important;
         border-color: var(--blue) !important;
         color: #fff !important;
     }
-    
-    .fc-theme-standard th { background: #f8fafc; padding: 10px 0 !important; border-color: #f1f5f9; font-size: 13px; color: #64748b; font-weight: 700; text-transform: uppercase; }
-    .fc-theme-standard td { border-color: #f1f5f9; }
-    .fc-day-today { background: #f0f9ff !important; }
+    .fc .fc-button-group .fc-button { border-radius: 0 !important; }
+    .fc .fc-button-group .fc-button:first-child { border-radius: 8px 0 0 8px !important; }
+    .fc .fc-button-group .fc-button:last-child  { border-radius: 0 8px 8px 0 !important; }
 
-    .fc-event { border: none !important; border-radius: 6px !important; padding: 3px 5px !important; font-size: 11px !important; font-weight: 600 !important; cursor: pointer; }
-    
-    /* Types d'évènements */
-    .event-passed { background: #f1f5f9 !important; color: #64748b !important; text-decoration: line-through; border-left: 3px solid #cbd5e1 !important; }
-    .event-upcoming { background: #e0f2fe !important; color: #0369a1 !important; border-left: 3px solid var(--blue) !important; }
-    .event-urgent { background: #fef2f2 !important; color: #b91c1c !important; border-left: 3px solid #ef4444 !important; }
+    /* En-têtes colonnes */
+    .fc-col-header-cell {
+        background: #f8fafc !important;
+        border-color: #f1f5f9 !important;
+        padding: 10px 0 !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: .06em !important;
+    }
+    .fc-col-header-cell a { color: inherit !important; text-decoration: none !important; }
+
+    /* Cellules */
+    .fc-theme-standard td,
+    .fc-theme-standard th { border-color: #f1f5f9 !important; }
+    .fc-day-today          { background: #f0f9ff !important; }
+    .fc-day-today .fc-col-header-cell-cushion { color: var(--blue) !important; }
+
+    /* Numéros de jour en vue Mois */
+    .fc-daygrid-day-number { font-size: 12px !important; font-weight: 700 !important; color: #475569 !important; padding: 6px 8px !important; }
+    .fc-day-today .fc-daygrid-day-number {
+        background: var(--blue) !important; color: #fff !important;
+        border-radius: 50% !important; width: 26px; height: 26px;
+        display: flex !important; align-items: center; justify-content: center;
+        margin: 4px !important;
+    }
+
+    /* Événements */
+    .fc-event {
+        border: none !important; border-radius: 6px !important;
+        padding: 2px 6px !important; font-size: 11px !important;
+        font-weight: 700 !important; cursor: pointer !important;
+        transition: opacity .15s !important;
+    }
+    .fc-event:hover { opacity: .85 !important; }
+    .fc-event-title { font-weight: 700 !important; }
+    .fc-event-time  { font-size: 10px !important; opacity: .8 !important; }
+
+    .event-passed   { background: #f1f5f9 !important; color: #64748b !important; border-left: 3px solid #cbd5e1 !important; }
+    .event-upcoming { background: #dbeafe !important; color: #1e40af !important; border-left: 3px solid var(--blue) !important; }
+    .event-urgent   { background: #fee2e2 !important; color: #991b1b !important; border-left: 3px solid #ef4444 !important; }
+
+    /* Liste */
+    .fc-list-event-title a { color: #0f172a !important; font-weight: 700 !important; }
+    .fc-list-day-cushion    { background: #f8fafc !important; font-size: 12px !important; font-weight: 800 !important; }
 
 </style>
 @endpush
@@ -126,15 +188,15 @@
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                right: 'dayGridMonth,timeGridWeek,listDay,listWeek'
             },
-            
+
             buttonText: {
                 today: "Aujourd'hui",
                 month: 'Mois',
                 week: 'Semaine',
-                day: 'Jour',
-                list: 'Liste (Historique)'
+                listDay: 'Jour',
+                listWeek: 'Liste (Historique)'
             },
 
             // Personnalisation du rendu des évènements pour injecter nos propres classes CSS

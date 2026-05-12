@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Urgence extends Model
 {
     protected $fillable = [
-        'patient_id', 'description', 'localisation',
+        'patient_id', 'nom_appelant', 'telephone',
+        'description', 'localisation',
         'latitude', 'longitude', 'statut',
     ];
 

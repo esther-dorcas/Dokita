@@ -33,4 +33,29 @@ class UrgenceController extends Controller
 
         return back()->with('success', 'Votre demande d\'urgence a été envoyée. Les services médicaux vous contacteront rapidement.');
     }
+
+    public function storePublic(Request $request)
+    {
+        $request->validate([
+            'nom_appelant' => ['required', 'string', 'max:255'],
+            'telephone'    => ['required', 'string', 'max:30'],
+            'description'  => ['required', 'string', 'max:1000'],
+            'localisation' => ['nullable', 'string', 'max:255'],
+            'latitude'     => ['nullable', 'numeric'],
+            'longitude'    => ['nullable', 'numeric'],
+        ]);
+
+        Urgence::create([
+            'patient_id'   => null,
+            'nom_appelant' => $request->nom_appelant,
+            'telephone'    => $request->telephone,
+            'description'  => $request->description,
+            'localisation' => $request->localisation,
+            'latitude'     => $request->latitude,
+            'longitude'    => $request->longitude,
+            'statut'       => 'en_cours',
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

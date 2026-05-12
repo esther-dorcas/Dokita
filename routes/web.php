@@ -13,6 +13,9 @@ use App\Models\Hopital;
 // ─── Auth routes (login, register, password reset…) ───────────────────────────
 require __DIR__.'/auth.php';
 
+// ─── Urgence publique (sans connexion) ────────────────────────────────────────
+Route::post('/urgence/publique', [UrgenceController::class, 'storePublic'])->name('urgence.publique');
+
 // ─── Pages publiques ───────────────────────────────────────────────────────────
 Route::get('/', function () {
     $hopitaux = Hopital::query()
