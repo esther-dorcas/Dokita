@@ -5,6 +5,8 @@ use App\Http\Controllers\HopitalController;
 use App\Http\Controllers\RendezvousController;
 use App\Http\Controllers\UrgenceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HopitalDashboardController;
+use App\Http\Controllers\MedecinController;
 use App\Http\Controllers\Api\PatientApiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -37,10 +39,7 @@ Route::get('/dashboard', function () {
 // Middleware auth uniquement (pas role:patient) pour éviter tout blocage après inscription
 Route::middleware(['auth'])->prefix('patient')->name('patient.')->group(function () {
     Route::get('/dashboard',  [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/historique', function() {
-        $completedRendezVous = collect([]);
-        return view('patient.history', compact('completedRendezVous'));
-    })->name('history');
+    Route::get('/historique', [DashboardController::class, 'history'])->name('history');
 });
 
 // ─── Routes communes authentifiées ────────────────────────────────────────────
@@ -68,83 +67,32 @@ Route::middleware(['auth'])->group(function () {
 
 // ─── Routes Hôpital ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:hopital'])->prefix('hopital')->name('hopital.')->group(function () {
-    Route::get('/dashboard',        fn() => view('hopital.dashboard'))->name('dashboard');
-    Route::get('/rdv', function() {
-        $now = \Carbon\Carbon::now();
-        $todayStart = $now->copy()->startOfDay();
-        $todayEnd = $now->copy()->endOfDay();
-
-        $allRdvs = \App\Models\RendezVous::with('patient', 'medecin')->orderBy('date_heure', 'desc')->get();
-        
-        $rdvAujourdhui = $allRdvs->filter(function($rdv) use ($todayStart, $todayEnd) {
-            return $rdv->date_heure && $rdv->date_heure->between($todayStart, $todayEnd);
-        });
-
-        $rdvAVenir = $allRdvs->filter(function($rdv) use ($todayEnd) {
-            return $rdv->date_heure && $rdv->date_heure->gt($todayEnd);
-        });
-
-        $rdvHistorique = $allRdvs->filter(function($rdv) use ($todayStart) {
-            return $rdv->date_heure && $rdv->date_heure->lt($todayStart) || !$rdv->date_heure;
-        });
-
-        return view('hopital.rdv', compact('allRdvs', 'rdvAujourdhui', 'rdvAVenir', 'rdvHistorique'));
-    })->name('rdv');
+    Route::get('/dashboard',        [HopitalDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/rdv',              [HopitalDashboardController::class, 'rdv'])->name('rdv');
     
     // Actions sur les RDV
-    Route::post('/rdv/{id}/statut', function(\Illuminate\Http\Request $request, $id) {
-        $rdv = \App\Models\RendezVous::with('patient')->findOrFail($id);
-        $rdv->update(['statut' => $request->statut]);
-        
-        // Envoi de l'email au patient
-        if ($rdv->patient && $rdv->patient->email) {
-            \Illuminate\Support\Facades\Mail::to($rdv->patient->email)->send(new \App\Mail\RdvStatusMail($rdv, $request->statut));
-        }
-
-        return back()->with('success', 'Le statut du rendez-vous a été mis à jour.');
-    })->name('rdv.statut');
-
-    Route::post('/rdv/{id}/reprogrammer', function(\Illuminate\Http\Request $request, $id) {
-        $rdv = \App\Models\RendezVous::with('patient')->findOrFail($id);
-        $rdv->update(['date_heure' => $request->date_heure]);
-
-        // Envoi de l'email au patient
-        if ($rdv->patient && $rdv->patient->email) {
-            \Illuminate\Support\Facades\Mail::to($rdv->patient->email)->send(new \App\Mail\RdvStatusMail($rdv, 'reprogramme'));
-        }
-
-        return back()->with('success', 'Le rendez-vous a été reprogrammé avec succès.');
-    })->name('rdv.reprogrammer');
-    Route::get('/medecins', function() {
-        $medecins = \App\Models\User::where('role', 'medecin')->get();
-        return view('hopital.medecins', compact('medecins'));
-    })->name('medecins');
-    Route::get('/medecins/ajouter', fn() => view('hopital.medecins-create'))->name('medecins.create');
-    Route::get('/urgences', function() {
-        $urgences = \App\Models\Urgence::with('patient')->latest()->get();
-        return view('hopital.urgences', compact('urgences'));
-    })->name('urgences');
-    Route::get('/parametres',       fn() => view('hopital.parametres'))->name('parametres');
+    Route::post('/rdv/{id}/statut', [HopitalDashboardController::class, 'updateRdvStatut'])->name('rdv.statut');
+    Route::post('/rdv/{id}/reprogrammer', [HopitalDashboardController::class, 'reprogrammerRdv'])->name('rdv.reprogrammer');
+    
+    Route::get('/medecins',         [HopitalDashboardController::class, 'medecins'])->name('medecins');
+    Route::get('/medecins/ajouter', [HopitalDashboardController::class, 'medecinsCreate'])->name('medecins.create');
+    
+    Route::get('/urgences',         [HopitalDashboardController::class, 'urgences'])->name('urgences');
+    Route::get('/parametres',       [HopitalDashboardController::class, 'parametres'])->name('parametres');
 
     // Polling API pour les alertes en temps réel
-    Route::get('/api/urgences/count', function() {
-        return response()->json(\App\Models\Urgence::where('statut', 'en_cours')->count());
-    })->name('api.urgences.count');
-
-    Route::post('/urgences/{id}/resolve', function($id) {
-        \App\Models\Urgence::where('id', $id)->update(['statut' => 'resolu']);
-        return response()->json(['success' => true]);
-    })->name('urgences.resolve');
+    Route::get('/api/urgences/count', [HopitalDashboardController::class, 'countUrgences'])->name('api.urgences.count');
+    Route::post('/urgences/{id}/resolve', [HopitalDashboardController::class, 'resolveUrgence'])->name('urgences.resolve');
 });
 
 // ─── Routes Médecin ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:medecin'])->prefix('medecin')->name('medecin.')->group(function () {
-    Route::get('/dashboard',    fn() => view('medecin.dashboard'))->name('dashboard');
-    Route::get('/rdv',          fn() => view('medecin.rdv'))->name('rdv');
-    Route::get('/planning',     fn() => view('medecin.planning'))->name('planning');
-    Route::get('/profil',       fn() => view('medecin.profil'))->name('profil');
-    Route::get('/consultation', fn() => view('medecin.consultation'))->name('consultation');
-    Route::get('/parametres',   fn() => view('medecin.settings'))->name('settings');
+    Route::get('/dashboard',    [MedecinController::class, 'dashboard'])->name('dashboard');
+    Route::get('/rdv',          [MedecinController::class, 'rdv'])->name('rdv');
+    Route::get('/planning',     [MedecinController::class, 'planning'])->name('planning');
+    Route::get('/profil',       [MedecinController::class, 'profil'])->name('profil');
+    Route::get('/consultation', [MedecinController::class, 'consultation'])->name('consultation');
+    Route::get('/parametres',   [MedecinController::class, 'settings'])->name('settings');
 });
 
 // ─── API Routes Patient ────────────────────────────────────────────────────────

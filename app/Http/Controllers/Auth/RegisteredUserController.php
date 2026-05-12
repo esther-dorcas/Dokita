@@ -20,7 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $hopitaux = \App\Models\Hopital::all();
+        return view('auth.register', compact('hopitaux'));
     }
 
     /**
@@ -35,17 +36,22 @@ class RegisteredUserController extends Controller
             $request->merge(['user_role' => 'medecin']);
         }
 
+        $isHopital = $request->user_role === 'hopital';
+
         $request->validate([
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname'  => ['required', 'string', 'max:255'],
+            'firstname' => [$isHopital ? 'nullable' : 'required', 'string', 'max:255'],
+            'lastname'  => [$isHopital ? 'nullable' : 'required', 'string', 'max:255'],
+            'hospital_name' => [$isHopital ? 'required' : 'nullable', 'string', 'max:255'],
             'phone'     => ['required', 'string', 'max:20'],
             'user_role' => ['required', 'in:patient,medecin,hopital'],
             'email'     => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password'  => ['required', Rules\Password::defaults()],
         ]);
 
+        $name = $isHopital ? $request->hospital_name : ($request->firstname . ' ' . $request->lastname);
+
         $user = User::create([
-            'name'                 => $request->firstname . ' ' . $request->lastname,
+            'name'                 => $name,
             'telephone'            => $request->phone,
             'role'                 => $request->user_role,
             'email'                => $request->email,
@@ -54,6 +60,26 @@ class RegisteredUserController extends Controller
             'license_number'       => $request->license_number,
             'hospital_affiliation' => $request->hospital_affiliation,
         ]);
+
+        // Création des records associés selon le rôle
+        if ($user->role === 'medecin') {
+            \App\Models\Medecin::create([
+                'user_id' => $user->id,
+                'hopital_id' => $request->hopital_id,
+                'specialite' => $request->specialty,
+            ]);
+        } elseif ($user->role === 'patient') {
+            \App\Models\Patient::create([
+                'user_id' => $user->id,
+            ]);
+        } elseif ($user->role === 'hopital') {
+            \App\Models\Hopital::create([
+                'user_id'   => $user->id,
+                'nom'       => $user->name,
+                'adresse'   => $request->city,
+                'telephone' => $user->telephone,
+            ]);
+        }
 
         event(new Registered($user));
 

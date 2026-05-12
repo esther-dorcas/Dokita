@@ -57,19 +57,19 @@
     <div class="stat-grid">
         <div class="stat-card">
             <div class="stat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/></svg></div>
-            <div><div class="stat-val">24</div><div class="stat-lbl">Médecins Actifs</div></div>
+            <div><div class="stat-val">{{ $medecinsActifsCount }}</div><div class="stat-lbl">Médecins Actifs</div></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
-            <div><div class="stat-val">142</div><div class="stat-lbl">Consultations du jour</div></div>
+            <div><div class="stat-val">{{ $consultationsTodayCount }}</div><div class="stat-lbl">Consultations du jour</div></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon alert"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-            <div><div class="stat-val">3</div><div class="stat-lbl">Urgences en cours</div></div>
+            <div><div class="stat-val">{{ $urgencesEnCoursCount }}</div><div class="stat-lbl">Urgences en cours</div></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon success"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
-            <div><div class="stat-val">18</div><div class="stat-lbl">Lits Disponibles</div></div>
+            <div><div class="stat-val">{{ $litsDisponibles }}</div><div class="stat-lbl">Lits Disponibles</div></div>
         </div>
     </div>
 
@@ -91,30 +91,22 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @forelse($recentDemandes as $rdv)
                     <tr>
-                        <td><strong>ADJIBI Paul</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">08:14 - Cotonou (Gbégamey)</span></td>
-                        <td>Malaise cardiaque</td>
-                        <td><span class="status-badge urgent">Urgence Vitale</span></td>
-                        <td>Dr. SOGLO (Cardio)</td>
+                        <td><strong>{{ $rdv->patient->user->name ?? 'Anonyme' }}</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">{{ $rdv->created_at->format('H:i') }} - {{ $rdv->patient->user->telephone ?? '' }}</span></td>
+                        <td>{{ $rdv->motif ?? 'Consultation' }}</td>
+                        <td>
+                            <span class="status-badge {{ $rdv->statut === 'urgent' ? 'urgent' : ($rdv->statut === 'en_attente' ? 'waiting' : 'active') }}">
+                                {{ $rdv->statut_label ?? $rdv->statut }}
+                            </span>
+                        </td>
+                        <td>{{ $rdv->medecin->user->name ?? 'Non affecté' }}</td>
                     </tr>
+                    @empty
                     <tr>
-                        <td><strong>ZANNOU Aline</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">08:30 - Rendez-vous</span></td>
-                        <td>Consultation Pédiatrique</td>
-                        <td><span class="status-badge waiting">En salle d'attente</span></td>
-                        <td>Dr. KOUASSI (Pédiatre)</td>
+                        <td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Aucune demande récente.</td>
                     </tr>
-                    <tr>
-                        <td><strong>DOSSOU Eric</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">09:00 - Urgence Mineure</span></td>
-                        <td>Coupure profonde</td>
-                        <td><span class="status-badge urgent" style="background:#fff7ed; color:#ea580c;">Urgence</span></td>
-                        <td>Dr. BIO (Généraliste)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>HONFO Juliette</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">09:15 - Rendez-vous</span></td>
-                        <td>Suivi grossesse</td>
-                        <td><span class="status-badge active">En consultation</span></td>
-                        <td>Dr. TCHOUROU (Gynéco)</td>
-                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -126,41 +118,18 @@
                 <a href="{{ route('hopital.medecins') }}" class="view-all">Gérer</a>
             </div>
             
+            @forelse($medecinsGarde as $userDoc)
             <div class="doc-item">
-                <div class="doc-av">SJ</div>
+                <div class="doc-av">{{ $userDoc->medecin->initiales ?? 'DR' }}</div>
                 <div class="doc-info">
-                    <div class="doc-name">Dr. SOGLO Jean</div>
-                    <div class="doc-spec">Cardiologie</div>
+                    <div class="doc-name">Dr. {{ $userDoc->name }}</div>
+                    <div class="doc-spec">{{ $userDoc->medecin->specialite->nom_specialite ?? 'Généraliste' }}</div>
                 </div>
                 <div class="doc-status" title="Disponible"></div>
             </div>
-            
-            <div class="doc-item">
-                <div class="doc-av">KA</div>
-                <div class="doc-info">
-                    <div class="doc-name">Dr. KOUASSI A.</div>
-                    <div class="doc-spec">Pédiatrie</div>
-                </div>
-                <div class="doc-status" title="Disponible"></div>
-            </div>
-
-            <div class="doc-item">
-                <div class="doc-av">BM</div>
-                <div class="doc-info">
-                    <div class="doc-name">Dr. BIO Michel</div>
-                    <div class="doc-spec">Généraliste</div>
-                </div>
-                <div class="doc-status" style="background:#ef4444;" title="En intervention"></div>
-            </div>
-
-            <div class="doc-item">
-                <div class="doc-av">TJ</div>
-                <div class="doc-info">
-                    <div class="doc-name">Dr. TCHOUROU J.</div>
-                    <div class="doc-spec">Gynécologie</div>
-                </div>
-                <div class="doc-status" title="Disponible"></div>
-            </div>
+            @empty
+            <p class="text-xs text-gray-400">Aucun médecin de garde répertorié.</p>
+            @endforelse
 
             <a href="{{ route('hopital.medecins.create') }}" class="view-all" style="display:block; text-align:center; margin-top:20px; padding:10px; background:#f8fafc; border-radius:10px;">+ Ajouter un médecin</a>
         </div>
