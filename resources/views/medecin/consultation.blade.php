@@ -99,6 +99,31 @@
     .btn-primary:hover { background: #0369a1; }
     .btn-success { background: #16a34a; color: #fff; }
     .btn-success:hover { background: #15803d; }
+
+    /* ── TOAST ── */
+    @keyframes toastIn  { from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(60px)} }
+    #c-toast-wrap { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+    .c-toast { background:#fff; border-radius:12px; padding:14px 18px; box-shadow:0 8px 30px rgba(0,0,0,.12); display:flex; align-items:center; gap:12px; min-width:260px; border-left:4px solid #22c55e; animation:toastIn .3s ease-out; pointer-events:all; }
+    .c-toast.warning { border-left-color:#f59e0b; }
+    .c-toast-icon { width:32px; height:32px; border-radius:8px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .c-toast.warning .c-toast-icon { background:#fffbeb; }
+    .c-toast-title { font-size:13px; font-weight:800; color:#0f172a; }
+    .c-toast-desc  { font-size:12px; color:#64748b; }
+
+    /* ── MODAL CONFIRMATION FIN DE CONSULTATION ── */
+    .fin-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9100; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .fin-overlay.open { opacity:1; pointer-events:all; }
+    .fin-box { background:#fff; border-radius:20px; width:100%; max-width:400px; padding:28px; box-shadow:0 25px 60px rgba(0,0,0,.15); text-align:center; transform:translateY(12px); transition:transform .2s; }
+    .fin-overlay.open .fin-box { transform:translateY(0); }
+    .fin-icon { width:56px; height:56px; background:#f0fdf4; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+    .fin-title { font-size:17px; font-weight:800; color:#0f172a; margin-bottom:8px; }
+    .fin-desc  { font-size:13px; color:#64748b; margin-bottom:24px; line-height:1.6; }
+    .fin-actions { display:flex; gap:12px; justify-content:center; }
+    .btn-fin-cancel { background:#f1f5f9; color:#475569; border:none; padding:10px 22px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+    .btn-fin-cancel:hover { background:#e2e8f0; }
+    .btn-fin-ok { background:#16a34a; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+    .btn-fin-ok:hover { background:#15803d; }
 </style>
 @endpush
 
@@ -207,12 +232,86 @@
 
             <div class="action-row">
                 <button class="btn btn-outline">Sauvegarder brouillon</button>
-                <button class="btn btn-primary" onclick="alert('L\'ordonnance a été générée en PDF !')">Imprimer Ordonnance</button>
-                <a href="{{ route('medecin.dashboard') }}" class="btn btn-success" style="text-decoration:none; display:inline-block; text-align:center;" onclick="alert('Consultation clôturée avec succès !')">Terminer la consultation</a>
+                <button class="btn btn-primary" onclick="imprimerOrdonnance()">Imprimer Ordonnance</button>
+                <button class="btn btn-success" onclick="demanderTerminer()">Terminer la consultation</button>
             </div>
         </div>
 
     </div>
 
 </div>
+
+{{-- ── MODAL FIN DE CONSULTATION ── --}}
+<div class="fin-overlay" id="modal-fin" onclick="if(event.target===this)fermerFin()">
+    <div class="fin-box">
+        <div class="fin-icon">
+            <svg width="26" height="26" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="fin-title">Terminer la consultation ?</div>
+        <div class="fin-desc">Confirmez-vous la clôture de cette consultation ?<br>Le dossier sera sauvegardé et vous serez redirigé vers le tableau de bord.</div>
+        <div class="fin-actions">
+            <button class="btn-fin-cancel" onclick="fermerFin()">Annuler</button>
+            <button class="btn-fin-ok" id="btn-fin-ok">Confirmer &amp; Clôturer</button>
+        </div>
+    </div>
+</div>
+
+{{-- ── TOASTS ── --}}
+<div id="c-toast-wrap"></div>
+
+@push('scripts')
+<script>
+    /* ── IMPRIMER ORDONNANCE ── */
+    function imprimerOrdonnance() {
+        afficherToast(
+            'Impression lancée',
+            "L'ordonnance a été envoyée à l'impression.",
+            'success'
+        );
+        setTimeout(() => window.print(), 500);
+    }
+
+    /* ── TERMINER LA CONSULTATION ── */
+    function demanderTerminer() {
+        document.getElementById('modal-fin').classList.add('open');
+    }
+    function fermerFin() {
+        document.getElementById('modal-fin').classList.remove('open');
+    }
+    document.getElementById('btn-fin-ok').addEventListener('click', function () {
+        this.disabled = true;
+        this.textContent = 'Clôture en cours…';
+        afficherToast('Consultation clôturée', 'Le dossier a été sauvegardé avec succès.', 'success');
+        setTimeout(() => {
+            window.location.href = "{{ route('medecin.dashboard') }}";
+        }, 1200);
+    });
+
+    /* ── TOAST ── */
+    function afficherToast(titre, desc, type) {
+        const wrap = document.getElementById('c-toast-wrap');
+        const t = document.createElement('div');
+        t.className = 'c-toast' + (type === 'warning' ? ' warning' : '');
+
+        const color = type === 'warning' ? '#f59e0b' : '#22c55e';
+        const path  = type === 'warning'
+            ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>'
+            : '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>';
+
+        t.innerHTML = `
+            <div class="c-toast-icon">
+                <svg width="18" height="18" fill="none" stroke="${color}" stroke-width="2.5" viewBox="0 0 24 24">${path}</svg>
+            </div>
+            <div>
+                <div class="c-toast-title">${titre}</div>
+                <div class="c-toast-desc">${desc}</div>
+            </div>`;
+        wrap.appendChild(t);
+        setTimeout(() => {
+            t.style.animation = 'toastOut .3s ease-in forwards';
+            setTimeout(() => t.remove(), 300);
+        }, 4000);
+    }
+</script>
+@endpush
 @endsection

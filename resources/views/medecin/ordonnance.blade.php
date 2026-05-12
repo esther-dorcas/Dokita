@@ -129,6 +129,17 @@
         .print-target { display:block !important; position:fixed; inset:0; background:#fff; z-index:9999; padding:30px 40px; }
     }
     .print-target { display:none; }
+
+    /* ── TOAST ── */
+    @keyframes toastIn  { from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(60px)} }
+    #ord-toast-wrap { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+    .ord-toast { background:#fff; border-radius:12px; padding:14px 18px; box-shadow:0 8px 30px rgba(0,0,0,.12); display:flex; align-items:center; gap:12px; min-width:270px; border-left:4px solid #22c55e; animation:toastIn .3s ease-out; pointer-events:all; }
+    .ord-toast.warn { border-left-color:#f59e0b; }
+    .ord-toast-icon { width:32px; height:32px; border-radius:8px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .ord-toast.warn .ord-toast-icon { background:#fffbeb; }
+    .ord-toast-title { font-size:13px; font-weight:800; color:#0f172a; }
+    .ord-toast-desc  { font-size:12px; color:#64748b; }
 </style>
 @endpush
 
@@ -161,8 +172,8 @@
             <div class="ph-title">Nouvelle ordonnance</div>
             <div class="ph-sub">Remplissez le formulaire, puis imprimez ou sauvegardez.</div>
         </div>
-        <button class="btn btn-dark" @click="canPrint ? window.print() : null"
-            :style="!canPrint ? 'opacity:.4;cursor:not-allowed;' : ''"
+        <button class="btn btn-dark" @click="lancerImpression(canPrint)"
+            :style="!canPrint ? 'opacity:.4;' : ''"
             style="background:rgba(255,255,255,.1); border:1.5px solid rgba(255,255,255,.2); color:#fff;">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/></svg>
             Imprimer
@@ -301,8 +312,8 @@
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                     Sauvegarder
                 </button>
-                <button class="btn btn-primary" @click="canPrint ? window.print() : null"
-                    :style="!canPrint ? 'opacity:.5;cursor:not-allowed;' : ''">
+                <button class="btn btn-primary" @click="lancerImpression(canPrint)"
+                    :style="!canPrint ? 'opacity:.5;' : ''">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/></svg>
                     Imprimer l'ordonnance
                 </button>
@@ -312,4 +323,47 @@
     </div>{{-- fin .ord-form --}}
 
 </div>
+
+{{-- ── TOASTS ── --}}
+<div id="ord-toast-wrap"></div>
+
+@push('scripts')
+<script>
+    function lancerImpression(canPrint) {
+        if (!canPrint) {
+            ordToast(
+                'Formulaire incomplet',
+                'Renseignez le nom du patient et au moins un médicament.',
+                'warn'
+            );
+            return;
+        }
+        ordToast('Impression en cours', "L'ordonnance est envoyée à l'imprimante.", 'success');
+        setTimeout(() => window.print(), 600);
+    }
+
+    function ordToast(titre, desc, type) {
+        const wrap = document.getElementById('ord-toast-wrap');
+        const t = document.createElement('div');
+        t.className = 'ord-toast' + (type === 'warn' ? ' warn' : '');
+        const color = type === 'warn' ? '#f59e0b' : '#22c55e';
+        const path  = type === 'warn'
+            ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>'
+            : '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>';
+        t.innerHTML = `
+            <div class="ord-toast-icon">
+                <svg width="18" height="18" fill="none" stroke="${color}" stroke-width="2.5" viewBox="0 0 24 24">${path}</svg>
+            </div>
+            <div>
+                <div class="ord-toast-title">${titre}</div>
+                <div class="ord-toast-desc">${desc}</div>
+            </div>`;
+        wrap.appendChild(t);
+        setTimeout(() => {
+            t.style.animation = 'toastOut .3s ease-in forwards';
+            setTimeout(() => t.remove(), 300);
+        }, 4000);
+    }
+</script>
+@endpush
 @endsection
