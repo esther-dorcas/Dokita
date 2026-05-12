@@ -11,6 +11,20 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->role === 'medecin') {
+            return redirect()->route('medecin.dashboard');
+        }
+
+        if ($user->role === 'hopital') {
+            return redirect()->route('hopital.dashboard');
+        }
+
+        if ($user->role === 'patient' && !$user->patient) {
+            \App\Models\Patient::create(['user_id' => $user->id]);
+        }
+
+        $patient = $user->patient;
+
         $upcomingRendezVous = $user->rendezVous()
             ->where('date_heure', '>=', now())
             ->where('statut', '!=', 'annule')
@@ -25,11 +39,24 @@ class DashboardController extends Controller
         $notifCount     = 0; // à brancher quand tu auras les notifications
 
         return view('patient.dashboard', compact(
+            'patient',
             'upcomingRendezVous',
             'upcomingCount',
             'completedCount',
             'confirmedCount',
             'notifCount'
         ));
+    }
+
+    public function history()
+    {
+        $user = Auth::user();
+        $completedRendezVous = $user->rendezVous()
+            ->where('statut', 'termine')
+            ->orderBy('date_heure', 'desc')
+            ->with('medecin.user')
+            ->get();
+
+        return view('patient.history', compact('completedRendezVous'));
     }
 }

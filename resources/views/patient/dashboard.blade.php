@@ -269,8 +269,10 @@
                 </svg>
             </div>
             <div class="sf-label">Groupe sanguin</div>
-            <div class="sf-val">O+</div>
-            <span class="sf-pill p-green">✓ Vérifié</span>
+            <div class="sf-val">{{ $patient->groupe_sanguin ?? '--' }}</div>
+            <span class="sf-pill {{ $patient->groupe_sanguin ? 'p-green' : 'p-slate' }}">
+                {{ $patient->groupe_sanguin ? '✓ Vérifié' : 'Non renseigné' }}
+            </span>
         </div>
         <div class="sf">
             <div class="sf-icon" style="background:#fff7ed">
@@ -280,7 +282,7 @@
                 </svg>
             </div>
             <div class="sf-label">Tension artérielle</div>
-            <div class="sf-val">12/8</div>
+            <div class="sf-val">{{ $patient->tension ?? '--/--' }}</div>
             <span class="sf-pill p-blue">Normal</span>
         </div>
         <div class="sf">
@@ -302,8 +304,8 @@
                 </svg>
             </div>
             <div class="sf-label">Dernier poids</div>
-            <div class="sf-val">72 <small>kg</small></div>
-            <span class="sf-pill p-amber">Il y a 2 sem.</span>
+            <div class="sf-val">{{ $patient->poids ?? '--' }} <small>kg</small></div>
+            <span class="sf-pill p-amber">À jour</span>
         </div>
     </div>
 

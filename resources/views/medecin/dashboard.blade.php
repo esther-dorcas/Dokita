@@ -88,21 +88,21 @@
         <div class="sf-card">
             <div class="sf-icon" style="background:#f0fdfa; color:#0d9488;">👥</div>
             <div>
-                <div class="sf-val">12</div>
+                <div class="sf-val">{{ $patientsPrevusCount }}</div>
                 <div class="sf-label">Patients prévus</div>
             </div>
         </div>
         <div class="sf-card">
             <div class="sf-icon" style="background:#eff6ff; color:#2563eb;">🩺</div>
             <div>
-                <div class="sf-val">4</div>
+                <div class="sf-val">{{ $consultesJourCount }}</div>
                 <div class="sf-label">Consultés ce jour</div>
             </div>
         </div>
         <div class="sf-card">
             <div class="sf-icon" style="background:#fef2f2; color:#ef4444;">🚨</div>
             <div>
-                <div class="sf-val">1</div>
+                <div class="sf-val">{{ $urgencesAssigneesCount }}</div>
                 <div class="sf-label">Urgence assignée</div>
             </div>
         </div>
@@ -118,38 +118,20 @@
             </div>
             
             <div class="planning-card">
+                @forelse($upcomingConsultations as $rdv)
                 <div class="rdv-item">
-                    <div class="rdv-time">09:00</div>
+                    <div class="rdv-time">{{ $rdv->date_heure ? $rdv->date_heure->format('H:i') : '--:--' }}</div>
                     <div class="rdv-patient">
-                        <div class="rdv-name">SOGLO Jean-Paul</div>
-                        <div class="rdv-motif">Contrôle de routine / Renouvellement Ordonnance</div>
+                        <div class="rdv-name">{{ $rdv->patient->user->name ?? 'Patient Anonyme' }}</div>
+                        <div class="rdv-motif">{{ $rdv->motif ?? 'Pas de motif spécifié' }}</div>
                     </div>
-                    <a href="{{ route('medecin.consultation', ['name' => 'SOGLO Jean-Paul', 'motif' => 'Contrôle de routine / Renouvellement Ordonnance']) }}" class="rdv-action">Démarrer</a>
+                    <a href="{{ route('medecin.consultation', ['name' => $rdv->patient->user->name ?? '', 'motif' => $rdv->motif ?? '']) }}" class="rdv-action">
+                        {{ $rdv->date_heure && $rdv->date_heure->isToday() && $rdv->date_heure->isPast() ? 'Démarrer' : 'Préparer dossier' }}
+                    </a>
                 </div>
-                <div class="rdv-item">
-                    <div class="rdv-time">09:30</div>
-                    <div class="rdv-patient">
-                        <div class="rdv-name">AMADOU Aminata</div>
-                        <div class="rdv-motif">Fièvre persistante depuis 3 jours</div>
-                    </div>
-                    <a href="{{ route('medecin.consultation', ['name' => 'AMADOU Aminata', 'motif' => 'Fièvre persistante depuis 3 jours']) }}" class="rdv-action">Préparer dossier</a>
-                </div>
-                <div class="rdv-item">
-                    <div class="rdv-time">10:15</div>
-                    <div class="rdv-patient">
-                        <div class="rdv-name">DOSSOU Maxime</div>
-                        <div class="rdv-motif">Résultats d'analyses sanguines</div>
-                    </div>
-                    <a href="{{ route('medecin.consultation', ['name' => 'DOSSOU Maxime', 'motif' => 'Résultats d\'analyses sanguines']) }}" class="rdv-action">Préparer dossier</a>
-                </div>
-                <div class="rdv-item">
-                    <div class="rdv-time">11:00</div>
-                    <div class="rdv-patient">
-                        <div class="rdv-name">KOUASSI Eliane</div>
-                        <div class="rdv-motif">Douleurs articulaires</div>
-                    </div>
-                    <a href="{{ route('medecin.consultation', ['name' => 'KOUASSI Eliane', 'motif' => 'Douleurs articulaires']) }}" class="rdv-action">Préparer dossier</a>
-                </div>
+                @empty
+                <p class="text-sm text-gray-500 py-4 text-center">Aucune consultation prévue pour aujourd'hui.</p>
+                @endforelse
             </div>
         </div>
 

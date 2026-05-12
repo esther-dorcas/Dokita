@@ -121,39 +121,45 @@
         @media(max-width:640px){
             .form-grid { grid-template-columns:1fr; }
             .form-full { grid-column:span 1; }
-            .role-row { gap:0.75rem; }
         }
     </style>
 </head>
-<body x-data="{
-    role: 'patient',
-    fields() {
-        const base = [
-            { type:'text',     name:'firstname', label:'Prénom',        placeholder:'Jean',              required:true,  full:false },
-            { type:'text',     name:'lastname',  label:'Nom',           placeholder:'Dossou',            required:true,  full:false },
-            { type:'email',    name:'email',     label:'Adresse email', placeholder:'jean@email.com',    required:true,  full:true  },
-            { type:'tel',      name:'phone',     label:'Téléphone',     placeholder:'+229 90 00 00 00',  required:true,  full:true  },
-            { type:'password', name:'password',  label:'Mot de passe',  placeholder:'••••••••',          required:true,  full:true  },
-        ];
-        const praticien = [
-            { type:'text', name:'specialty',         label:'Spécialité',            placeholder:'Cardiologie, Généraliste…',  required:true,  full:true  },
-            { type:'text', name:'license_number',    label:'N° d\'inscription',     placeholder:'Médecin n°…',               required:false, full:false },
-            { type:'text', name:'hospital_affiliation', label:'Hôpital / Cabinet',  placeholder:'Nom de l\'établissement',   required:false, full:false },
-        ];
-        const hopital = [
-            { type:'text',  name:'hospital_name',  label:'Nom de l\'hôpital',      placeholder:'Centre Hospitalier…',       required:true,  full:true  },
-            { type:'text',  name:'director',        label:'Directeur',              placeholder:'Dr. Kossi',                 required:false, full:false },
-            { type:'text',  name:'city',            label:'Ville',                  placeholder:'Cotonou',                   required:true,  full:false },
-            { type:'email', name:'email',           label:'Adresse email',          placeholder:'contact@hopital.bj',        required:true,  full:true  },
-            { type:'tel',   name:'phone',           label:'Téléphone',              placeholder:'+229 21 XX XX XX',          required:true,  full:true  },
-            { type:'password', name:'password',     label:'Mot de passe',           placeholder:'••••••••',                  required:true,  full:true  },
-        ];
-        if (this.role === 'patient')    return base;
-        if (this.role === 'praticien')  return [ ...base.slice(0,4), ...praticien, base[4] ];
-        if (this.role === 'hopital')    return hopital;
-        return base;
-    }
-}">
+<body x-data="registerForm">
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('registerForm', () => ({
+                role: 'patient',
+                hopitaux: {!! json_encode($hopitaux) !!},
+                fields() {
+                    const base = [
+                        { type: 'text',     name: 'firstname', label: 'Prénom',        placeholder: 'Jean',              required: true,  full: false },
+                        { type: 'text',     name: 'lastname',  label: 'Nom',           placeholder: 'Dossou',            required: true,  full: false },
+                        { type: 'email',    name: 'email',     label: 'Adresse email', placeholder: 'jean@email.com',    required: true,  full: true  },
+                        { type: 'tel',      name: 'phone',     label: 'Téléphone',     placeholder: '+229 90 00 00 00',  required: true,  full: true  },
+                        { type: 'password', name: 'password',  label: 'Mot de passe',  placeholder: '••••••••',          required: true,  full: true  },
+                    ];
+                    const praticien = [
+                        { type: 'text',   name: 'specialty',         label: 'Spécialité',            placeholder: 'Cardiologie, Généraliste…',  required: true,  full: true  },
+                        { type: 'select', name: 'hopital_id',        label: 'Hôpital d\'affiliation', placeholder: 'Choisir un établissement…', required: true,  full: true, options: this.hopitaux },
+                        { type: 'text',   name: 'license_number',    label: 'N° d\'inscription',     placeholder: 'Médecin n°…',               required: false, full: false },
+                    ];
+                    const hopital = [
+                        { type: 'text',  name: 'hospital_name',  label: 'Nom de l\'hôpital',      placeholder: 'Centre Hospitalier…',       required: true,  full: true  },
+                        { type: 'text',  name: 'director',        label: 'Directeur',              placeholder: 'Dr. Kossi',                 required: false, full: false },
+                        { type: 'text',  name: 'city',            label: 'Ville',                  placeholder: 'Cotonou',                   required: true,  full: false },
+                        { type: 'email', name: 'email',           label: 'Adresse email',          placeholder: 'contact@hopital.bj',        required: true,  full: true  },
+                        { type: 'tel',   name: 'phone',           label: 'Téléphone',              placeholder: '+229 21 XX XX XX',          required: true,  full: true  },
+                        { type: 'password', name: 'password',     label: 'Mot de passe',           placeholder: '••••••••',                  required: true,  full: true  },
+                    ];
+                    if (this.role === 'patient')    return base;
+                    if (this.role === 'praticien')  return [ ...base.slice(0,4), ...praticien, base[4] ];
+                    if (this.role === 'hopital')    return hopital;
+                    return base;
+                }
+            }))
+        })
+    </script>
 
     {{-- ══ NAVBAR ══ --}}
     <nav id="main-nav" class="fixed top-0 inset-x-0 z-50">
@@ -234,6 +240,16 @@
                     <div style="margin-bottom:2rem;">
                         <h2 style="font-size:1.8rem; font-weight:900; color:#0f172a; margin-bottom:0.4rem;">Créer un compte</h2>
                         <p style="font-size:0.9rem; color:#64748b;">Choisissez votre profil et remplissez le formulaire.</p>
+                        
+                        @if ($errors->any())
+                            <div style="margin-top:1rem; padding:1rem; background:#fef2f2; border:1px solid #fecaca; border-radius:12px; color:#b91c1c; font-size:0.85rem;">
+                                <ul style="list-style:none;">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Sélecteur de rôle --}}
@@ -287,13 +303,25 @@
                             <template x-for="f in fields()" :key="f.name + role">
                                 <div class="field-group" :class="{ 'form-full': f.full }">
                                     <label x-text="f.label"></label>
-                                    <input
-                                        :type="f.type"
-                                        :name="f.name"
-                                        :placeholder="f.placeholder"
-                                        :required="f.required"
-                                        class="form-input"
-                                    >
+                                    
+                                    <template x-if="f.type === 'select'">
+                                        <select :name="f.name" :required="f.required" class="form-input" style="appearance: auto;">
+                                            <option value="" disabled selected x-text="f.placeholder"></option>
+                                            <template x-for="opt in f.options" :key="opt.id">
+                                                <option :value="opt.id" x-text="opt.nom"></option>
+                                            </template>
+                                        </select>
+                                    </template>
+                                    
+                                    <template x-if="f.type !== 'select'">
+                                        <input
+                                            :type="f.type"
+                                            :name="f.name"
+                                            :placeholder="f.placeholder"
+                                            :required="f.required"
+                                            class="form-input"
+                                        >
+                                    </template>
                                 </div>
                             </template>
                         </div>

@@ -7,9 +7,14 @@ class Hopital extends Model
     protected $table = 'hopitaux';
 
     protected $fillable = [
-        'nom','adresse','latitude','longitude',
+        'user_id','nom','adresse','latitude','longitude',
         'telephone','whatsapp','horaires','description'
     ];
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function specialites()
     {
