@@ -177,10 +177,7 @@
         var lastWeekStr = lastWeek.getFullYear() + '-' + lM + '-' + lD;
 
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek', // Vue par défaut: Semaine avec les heures
-            slotMinTime: '08:00:00', // Commence à 8h
-            slotMaxTime: '19:00:00', // Finit à 19h
-            allDaySlot: false, // Enlève la ligne "Toute la journée"
+            initialView: 'dayGridWeek', // Vue par défaut: Semaine avec un affichage par jour (comme le mois)
             locale: 'fr', // En français
             firstDay: 1, // La semaine commence le Lundi
             height: 700,
@@ -188,15 +185,15 @@
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listDay,listWeek'
+                right: 'dayGridMonth,dayGridWeek,dayGridDay,listMonth'
             },
 
             buttonText: {
                 today: "Aujourd'hui",
                 month: 'Mois',
                 week: 'Semaine',
-                listDay: 'Jour',
-                listWeek: 'Liste (Historique)'
+                dayGridDay: 'Jour',
+                listMonth: 'Historique'
             },
 
             // Personnalisation du rendu des évènements pour injecter nos propres classes CSS
@@ -210,59 +207,7 @@
                 }
             },
 
-            events: [
-                // === ÉVÈNEMENTS PASSÉS (HISTORIQUE) ===
-                {
-                    title: 'TOSSOU Marc (Terminé)',
-                    start: lastWeekStr + 'T10:00:00',
-                    end: lastWeekStr + 'T10:30:00',
-                    extendedProps: { isPast: true }
-                },
-                {
-                    title: 'DOSSA Clémence (Terminé)',
-                    start: yesterdayStr + 'T14:00:00',
-                    end: yesterdayStr + 'T14:45:00',
-                    extendedProps: { isPast: true }
-                },
-                {
-                    title: 'BIO Tchané (Terminé)',
-                    start: yesterdayStr + 'T16:00:00',
-                    end: yesterdayStr + 'T16:30:00',
-                    extendedProps: { isPast: true }
-                },
-
-                // === ÉVÈNEMENTS DU JOUR (À VENIR) ===
-                {
-                    title: 'SOGLO Jean-Paul - Contrôle',
-                    start: todayStr + 'T09:00:00',
-                    end: todayStr + 'T09:30:00',
-                    extendedProps: { isPast: false }
-                },
-                {
-                    title: 'AMADOU Aminata - Fièvre',
-                    start: todayStr + 'T09:30:00',
-                    end: todayStr + 'T10:00:00',
-                    extendedProps: { isPast: false }
-                },
-                {
-                    title: 'URGENCE - Détresse Resp.',
-                    start: todayStr + 'T10:30:00',
-                    end: todayStr + 'T11:00:00',
-                    extendedProps: { isPast: false, isUrgent: true }
-                },
-                {
-                    title: 'DOSSOU Maxime - Analyses',
-                    start: todayStr + 'T11:15:00',
-                    end: todayStr + 'T11:45:00',
-                    extendedProps: { isPast: false }
-                },
-                {
-                    title: 'KOUASSI Eliane - Douleurs',
-                    start: todayStr + 'T14:00:00',
-                    end: todayStr + 'T14:30:00',
-                    extendedProps: { isPast: false }
-                }
-            ]
+            events: {!! $eventsJson ?? '[]' !!}
         });
 
         calendar.render();

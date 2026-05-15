@@ -59,35 +59,53 @@
     </div>
 
     @php
-        $total = $allRdvs->count();
+        $total     = $allRdvs->count();
         $confirmes = $allRdvs->where('statut', 'confirme')->count();
-        $attente = $allRdvs->whereIn('statut', ['en_attente', 'attente'])->count();
+        $nbAttente = $rdvEnAttente->count();
     @endphp
+
+    {{-- Bannière alerte si RDV en attente --}}
+    @if($nbAttente > 0)
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px 20px; display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+        <div style="width:36px;height:36px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        </div>
+        <div>
+            <div style="font-size:14px;font-weight:800;color:#92400e;">{{ $nbAttente }} rendez-vous en attente de confirmation</div>
+            <div style="font-size:12px;color:#b45309;">Veuillez les confirmer ou les annuler — le médecin ne les voit pas encore.</div>
+        </div>
+        <button onclick="openTab(null,'tab-confirm');this.closest('div').style.display='none'" style="margin-left:auto;background:#f59e0b;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Voir &rarr;</button>
+    </div>
+    @endif
 
     <div class="stat-grid">
         <div class="stat-card">
             <div class="stat-val">{{ $total }}</div>
-            <div class="stat-lbl">Total Rendez-vous</div>
+            <div class="stat-lbl">Total</div>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #16a34a;">{{ $confirmes }}</div>
             <div class="stat-lbl">Confirmés</div>
         </div>
         <div class="stat-card">
-            <div class="stat-val" style="color: #d97706;">{{ $attente }}</div>
-            <div class="stat-lbl">En attente / À venir</div>
+            <div class="stat-val" style="color: #d97706;">{{ $nbAttente }}</div>
+            <div class="stat-lbl">En attente</div>
         </div>
     </div>
 
     {{-- TABS --}}
     <div class="tabs-container">
-        <button class="tab-btn active" onclick="openTab(event, 'tab-today')">Aujourd'hui ({{ $rdvAujourdhui->count() }})</button>
+        <button class="tab-btn {{ $nbAttente > 0 ? '' : 'active' }}" onclick="openTab(event, 'tab-today')">Aujourd'hui ({{ $rdvAujourdhui->count() }})</button>
+        <button class="tab-btn {{ $nbAttente > 0 ? 'active' : '' }}" onclick="openTab(event, 'tab-confirm')" style="{{ $nbAttente > 0 ? 'color:#d97706;border-bottom-color:#d97706;' : '' }}">
+            À confirmer
+            @if($nbAttente > 0)<span style="background:#f59e0b;color:#fff;border-radius:999px;font-size:10px;padding:1px 7px;margin-left:6px;">{{ $nbAttente }}</span>@endif
+        </button>
         <button class="tab-btn" onclick="openTab(event, 'tab-upcoming')">À venir ({{ $rdvAVenir->count() }})</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-history')">Historique & Passés ({{ $rdvHistorique->count() }})</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-history')">Historique ({{ $rdvHistorique->count() }})</button>
     </div>
 
     {{-- TAB: AUJOURD'HUI --}}
-    <div id="tab-today" class="tab-content active">
+    <div id="tab-today" class="tab-content {{ $nbAttente > 0 ? '' : 'active' }}">
         <div class="table-card">
             <table class="data-table">
                 <thead><tr><th>Patient & Motif</th><th>Date & Heure</th><th>Médecin affecté</th><th>Statut</th><th>Actions</th></tr></thead>
@@ -96,6 +114,26 @@
                         @include('hopital.partials.rdv-row', ['rdv' => $rdv])
                     @empty
                         <tr><td colspan="5" style="text-align: center; padding: 60px 40px; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 12px;"><div style="font-size: 32px; margin-bottom: 12px;">📅</div><div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">Aucun résultat</div><div style="font-size: 13px;">Il n'y a pas de rendez-vous prévus pour aujourd'hui.</div></td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- TAB: À CONFIRMER --}}
+    <div id="tab-confirm" class="tab-content {{ $nbAttente > 0 ? 'active' : '' }}">
+        <div class="table-card">
+            <table class="data-table">
+                <thead><tr><th>Patient & Motif</th><th>Date & Heure</th><th>Médecin affecté</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                    @forelse($rdvEnAttente as $rdv)
+                        @include('hopital.partials.rdv-row', ['rdv' => $rdv])
+                    @empty
+                        <tr><td colspan="5" style="text-align:center;padding:60px 40px;color:#64748b;">
+                            <div style="font-size:32px;margin-bottom:12px;">✅</div>
+                            <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">Tout est à jour</div>
+                            <div style="font-size:13px;">Aucun rendez-vous en attente de confirmation.</div>
+                        </td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -153,7 +191,7 @@
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        evt.currentTarget.classList.add('active');
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
     }
 
     function reprogrammerRDV(id, currentDate) {

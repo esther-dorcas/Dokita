@@ -49,12 +49,17 @@ class Medecin extends Model
         $creneaux = [];
         $start = \Carbon\Carbon::parse($date.' 08:00');
         $end   = \Carbon\Carbon::parse($date.' 18:00');
+        $maintenant = now();
 
         while ($start < $end) {
             $heure = $start->format('H:i');
+            
+            // Le créneau est libre s'il n'est pas pris ET s'il n'est pas déjà passé
+            $isLibre = !in_array($heure, $rdvPris) && $start > $maintenant;
+
             $creneaux[] = [
                 'heure' => $heure,
-                'libre' => !in_array($heure, $rdvPris)
+                'libre' => $isLibre
             ];
             $start->addMinutes(15);
         }

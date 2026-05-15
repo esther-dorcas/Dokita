@@ -218,12 +218,12 @@
                 {{-- Stats --}}
                 <div style="display:flex; gap:2.5rem; margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.15);">
                     <div>
-                        <p style="font-size:2rem; font-weight:900; color:#fff;">10k+</p>
-                        <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-top:4px;">Patients</p>
+                        <p style="font-size:2rem; font-weight:900; color:#fff;">+120</p>
+                        <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-top:4px;">Hôpitaux</p>
                     </div>
                     <div style="border-left:1px solid rgba(255,255,255,0.15); padding-left:2.5rem;">
-                        <p style="font-size:2rem; font-weight:900; color:#fff;">500+</p>
-                        <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-top:4px;">Praticiens</p>
+                        <p style="font-size:2rem; font-weight:900; color:#fff;">100%</p>
+                        <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.55); margin-top:4px;">Sécurisé </p>
                     </div>
                     <div style="border-left:1px solid rgba(255,255,255,0.15); padding-left:2.5rem;">
                         <p style="font-size:2rem; font-weight:900; color:#fff;">24/7</p>
@@ -347,53 +347,7 @@
         </div>{{-- fin split-layout --}}
     </div>
 
-    {{-- ══ FOOTER ══ --}}
-    <footer class="bg-slate-950 text-slate-300 w-full border-t border-slate-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="grid gap-12 lg:grid-cols-4">
-                <div>
-                    <span class="inline-flex items-center justify-center border-2 border-white/30 px-3 py-1.5 rounded-lg">
-                        <span class="text-white font-black text-lg">Dokita</span>
-                    </span>
-                    <p class="mt-4 text-sm leading-7 text-slate-400">Plateforme e-santé pour la prise de rendez-vous, la géolocalisation d'hôpitaux et les rappels automatiques au Bénin.</p>
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        <a href="#"    class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">Support</a>
-                        <a href="#"   class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">FAQ</a>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Navigation</h3>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="{{ route('home') }}#hospitaux"   class="hover:text-white transition font-semibold">Hôpitaux</a></li>
-                        <li><a href="{{ route('home') }}#medecins"    class="hover:text-white transition font-semibold">Médecins</a></li>
-                        <li><a href="{{ route('home') }}#services"    class="hover:text-white transition font-semibold">Services</a></li>
-                        <li><a href="{{ route('home') }}#temoignages" class="hover:text-white transition font-semibold">Témoignages</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Contact</h3>
-                    <p class="text-sm text-slate-400">support@dokita.bj</p>
-                    <p class="mt-3 text-sm text-slate-400">+229 90 00 00 00</p>
-                    <p class="mt-3 text-xs text-slate-500">Lun–Ven 08:00–18:00</p>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Réseaux</h3>
-                    <div class="flex flex-wrap gap-3 text-white">
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">FB</a>
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">TW</a>
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">IG</a>
-                    </div>
-                    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-                        <p class="text-xs uppercase tracking-widest text-slate-500 font-bold">Sécurité</p>
-                        <p class="mt-2 text-sm text-slate-400 leading-relaxed">Vos informations sont protégées et utilisées uniquement pour la gestion des rendez-vous.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-slate-800 pt-8 text-xs text-slate-600 text-center">
-                © {{ date('Y') }} Dokita. Tous droits réservés.
-            </div>
-        </div>
-    </footer>
-
+    @include('partials.footer')
+    @include('partials.samu-modal')
 </body>
 </html>

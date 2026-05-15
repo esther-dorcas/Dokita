@@ -127,7 +127,7 @@
                 <div class="hidden lg:flex items-center gap-3">
                     @guest
                         <a href="{{ route('login') }}" class="rounded-lg border-2 border-white/60 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10">Se connecter</a>
-                        <a href="{{ route('register') }}" class="rounded-lg bg-[#0891b2] px-5 py-2.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#0284c7]">S'inscrire</a>
+                        <a href="{{ route('register') }}" class="rounded-lg bg-[#0891b2] px-5 py-2.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#0284c7]">S'inscrire gratuitement</a>
                     @else
                         <a href="{{ route('dashboard') }}" class="rounded-lg bg-[#0891b2] px-5 py-2.5 text-sm font-bold text-white transition">Mon espace</a>
                     @endguest
@@ -363,14 +363,27 @@
                 <div class="side-card-dark">
                     <h3>Besoin d'un contact direct ?</h3>
                     <p>Notre équipe de support est disponible du Lundi au Samedi.</p>
-                    <a href="tel:+22921000000" class="contact-item"><span>📞</span><span>+229 21 00 00 00</span></a>
-                    <a href="mailto:support@dokita.bj" class="contact-item"><span>✉️</span><span>support@dokita.bj</span></a>
-                    <button class="btn-chat"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> Chat en direct</button>
+
+                    {{-- Téléphone : déclenche un appel --}}
+                    <a href="tel:+22945926313" class="contact-item">
+                        <span>📞</span><span>+229 45 92 63 13</span>
+                    </a>
+
+                    {{-- Mail : ouvre la messagerie --}}
+                    <a href="mailto:support@dokita.bj?subject=Demande%20de%20support%20-%20Dokita" class="contact-item">
+                        <span>✉️</span><span>support@dokita.bj</span>
+                    </a>
+
+                    {{-- Chat : ouvre la modale formulaire --}}
+                    <button onclick="openChatModal()" class="btn-chat">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        Chat en direct
+                    </button>
                 </div>
                 <div class="side-card-light">
                     <h3>Vous êtes un praticien ?</h3>
                     <p>Découvrez comment Dokita peut transformer votre activité.</p>
-                    <a href="#" class="side-link">En savoir plus →</a>
+                    <a href="{{ route('professional') }}" class="side-link">En savoir plus →</a>
                 </div>
             </aside>
         </div>
@@ -379,55 +392,126 @@
             <div class="max-w-2xl mx-auto px-6">
                 <h2>Toujours pas trouvé de réponse ?</h2>
                 <p>Envoyez-nous un message détaillé et nous vous répondrons sous 24h.</p>
-                <a href="#" class="btn-ticket">Ouvrir un ticket support</a>
+                <button onclick="openChatModal()" class="btn-ticket" style="border:none; cursor:pointer;">Ouvrir un ticket support</button>
             </div>
         </section>
     </main>
 
-    {{-- ══════════ FOOTER ══════════ --}}
-    <footer class="bg-slate-950 text-slate-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="grid gap-12 lg:grid-cols-4">
-                <div>
-                    <span class="inline-flex items-center justify-center border-2 border-white/30 px-3 py-1.5 rounded-lg">
-                        <span class="text-white font-black text-lg">Dokita</span>
-                    </span>
-                    <p class="mt-4 text-sm leading-7 text-slate-400">Plateforme e-santé pour la prise de rendez-vous, la géolocalisation d'hôpitaux et les rappels automatiques au Bénin.</p>
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        <a href="#"    class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">Support</a>
-                        <a href="#faq" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">FAQ</a>
+    @include('partials.footer')
+    @include('partials.samu-modal')
+
+    {{-- ══ MODALE CHAT EN DIRECT ══ --}}
+    <div id="chatModal" style="display:none; position:fixed; inset:0; z-index:999998; background:rgba(15,23,42,0.80); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem;">
+        <div style="background:#fff; width:100%; max-width:520px; border-radius:1.5rem; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,0.25);">
+
+            {{-- En-tête --}}
+            <div style="background:#0f2d52; padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="width:40px;height:40px;border-radius:50%;background:#00c2cb;display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    </div>
+                    <div>
+                        <p style="color:#fff;font-weight:800;font-size:0.95rem;margin:0;">Support Dokita</p>
+                        <p style="color:rgba(255,255,255,0.6);font-size:0.75rem;margin:0;">Nous répondons sous 24h</p>
                     </div>
                 </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Navigation</h3>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="{{ route('home') }}#hospitaux"   class="hover:text-white transition font-semibold">Hôpitaux</a></li>
-                        <li><a href="{{ route('home') }}#medecins"    class="hover:text-white transition font-semibold">Médecins</a></li>
-                        <li><a href="{{ route('home') }}#temoignages" class="hover:text-white transition font-semibold">Témoignages</a></li>
-                        <li><a href="{{ route('faq') }}"         class="hover:text-white transition font-semibold">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Contact</h3>
-                    <p class="text-sm text-slate-400">support@dokita.bj</p>
-                    <p class="mt-3 text-sm text-slate-400">+229 90 00 00 00</p>
-                    <p class="mt-3 text-xs text-slate-500">Lun–Ven 08:00–18:00</p>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Réseaux</h3>
-                    <div class="flex flex-wrap gap-3 text-white">
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">FB</a>
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">TW</a>
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">IG</a>
-                    </div>
-                    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-                        <p class="text-xs uppercase tracking-widest text-slate-500 font-bold">Sécurité</p>
-                        <p class="mt-2 text-sm text-slate-400 leading-relaxed">Vos informations sont protégées et utilisées uniquement pour la gestion des rendez-vous.</p>
-                    </div>
-                </div>
+                <button onclick="closeChatModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);padding:4px;" aria-label="Fermer">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            <div class="mt-12 border-t border-slate-800 pt-8 text-xs text-slate-600 text-center">© {{ date('Y') }} Dokita. Tous droits réservés.</div>
+
+            {{-- Formulaire --}}
+            <form id="chatForm" style="padding:1.75rem;" onsubmit="submitChatForm(event)">
+                <p style="font-size:0.875rem;color:#64748b;margin:0 0 1.5rem;line-height:1.6;">
+                    Décrivez votre problème ou votre question. Notre équipe vous répondra rapidement à <strong>support@dokita.bj</strong>.
+                </p>
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.8rem;font-weight:700;color:#0f2d52;margin-bottom:0.4rem;">Votre adresse email *</label>
+                    <input type="email" id="chat_email" required placeholder="votre@email.com"
+                        style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-size:0.875rem;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                        onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.8rem;font-weight:700;color:#0f2d52;margin-bottom:0.4rem;">Sujet *</label>
+                    <input type="text" id="chat_subject" required placeholder="Ex: Problème avec mon rendez-vous"
+                        style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-size:0.875rem;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                        onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block;font-size:0.8rem;font-weight:700;color:#0f2d52;margin-bottom:0.4rem;">Votre message *</label>
+                    <textarea id="chat_message" required rows="4" placeholder="Décrivez votre problème en détail..."
+                        style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-size:0.875rem;color:#1e293b;outline:none;resize:vertical;box-sizing:border-box;font-family:inherit;transition:border-color 0.2s;"
+                        onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                </div>
+
+                <button type="submit" style="width:100%;background:#00c2cb;color:#fff;border:none;border-radius:0.75rem;padding:0.9rem;font-size:0.9rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;transition:background 0.2s;"
+                    onmouseover="this.style.background='#0891b2'" onmouseout="this.style.background='#00c2cb'">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    Envoyer le message
+                </button>
+            </form>
         </div>
-    </footer>
+    </div>
+
+    <script>
+        function openChatModal() {
+            const modal = document.getElementById('chatModal');
+            modal.style.display = 'flex';
+        }
+        function closeChatModal() {
+            document.getElementById('chatModal').style.display = 'none';
+        }
+        function submitChatForm(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const email   = document.getElementById('chat_email').value.trim();
+            const subject = document.getElementById('chat_subject').value.trim();
+            const message = document.getElementById('chat_message').value.trim();
+
+            if (!email || !subject || !message) return;
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Envoi en cours...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            fetch('{{ route('contact.send') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ email, subject, message })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('chatForm').innerHTML = `
+                        <div style="text-align:center;padding:2rem 1rem;">
+                            <div style="width:72px;height:72px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+                                <svg width="36" height="36" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <h3 style="font-size:1.25rem;font-weight:900;color:#0f2d52;margin:0 0 0.75rem;">Message envoyé !</h3>
+                            <p style="color:#64748b;font-size:0.875rem;line-height:1.6;margin:0 0 1.5rem;">Notre équipe a bien reçu votre demande et vous répondra très rapidement par email.</p>
+                            <button type="button" onclick="closeChatModal()" style="background:#0f2d52;color:#fff;border:none;border-radius:0.75rem;padding:0.8rem 2rem;font-weight:800;cursor:pointer;">Fermer</button>
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                btn.innerHTML = 'Erreur. Réessayer';
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            });
+        }
+        // Fermer en cliquant sur le fond
+        document.getElementById('chatModal').addEventListener('click', function(e) {
+            if (e.target === this) closeChatModal();
+        });
+    </script>
+
 </body>
 </html>

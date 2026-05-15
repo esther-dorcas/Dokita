@@ -14,6 +14,20 @@ use Carbon\Carbon;
 
 class HopitalDashboardController extends Controller
 {
+    /**
+     * Calcul de distance en kilomètres (Formule de Haversine)
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        if (!$lat1 || !$lon1 || !$lat2 || !$lon2) return 0; // Si pas de GPS, on considère "proche" par défaut
+        $earthRadius = 6371; // km
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
+        $c = 2 * asin(sqrt($a));
+        return $earthRadius * $c;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -21,9 +35,10 @@ class HopitalDashboardController extends Controller
 
         if (!$hopital) {
             $hopital = \App\Models\Hopital::create([
-                'user_id' => $user->id,
-                'nom' => $user->name,
-                'telephone' => $user->telephone,
+                'user_id'   => $user->id,
+                'nom'       => $user->name,
+                'adresse'   => '',
+                'telephone' => $user->telephone ?? '',
             ]);
         }
 
@@ -36,7 +51,11 @@ class HopitalDashboardController extends Controller
             ->whereDate('date_heure', Carbon::today())
             ->count();
 
-        $urgencesEnCoursCount = \App\Models\Urgence::where('statut', 'en_cours')->count();
+        $allUrgencesEnCours = \App\Models\Urgence::where('statut', 'en_cours')->get();
+        $urgencesEnCoursCount = $allUrgencesEnCours->filter(function($u) use ($hopital) {
+            $dist = $this->calculateDistance($hopital->latitude, $hopital->longitude, $u->latitude, $u->longitude);
+            return $dist <= 15; // Rayon de 15km
+        })->count();
         $litsDisponibles = 18; // Placeholder as in view
 
         // Recent activity
@@ -64,25 +83,34 @@ class HopitalDashboardController extends Controller
 
     public function rdv()
     {
-        $now = Carbon::now();
+        $hopital = Auth::user()->hopital;
+
+        $now        = Carbon::now();
         $todayStart = $now->copy()->startOfDay();
-        $todayEnd = $now->copy()->endOfDay();
+        $todayEnd   = $now->copy()->endOfDay();
 
-        $allRdvs = RendezVous::with('patient', 'medecin.user')->orderBy('date_heure', 'desc')->get();
-        
-        $rdvAujourdhui = $allRdvs->filter(function($rdv) use ($todayStart, $todayEnd) {
-            return $rdv->date_heure && $rdv->date_heure->between($todayStart, $todayEnd);
-        });
+        // Filtre strictement sur l'hôpital connecté
+        $allRdvs = RendezVous::with('patient', 'medecin.user')
+            ->where('hopital_id', $hopital->id)
+            ->orderBy('date_heure', 'desc')
+            ->get();
 
-        $rdvAVenir = $allRdvs->filter(function($rdv) use ($todayEnd) {
-            return $rdv->date_heure && $rdv->date_heure->gt($todayEnd);
-        });
+        // RDV en attente de validation (à confirmer en priorité)
+        $rdvEnAttente = $allRdvs->where('statut', 'en_attente');
 
-        $rdvHistorique = $allRdvs->filter(function($rdv) use ($todayStart) {
-            return $rdv->date_heure && $rdv->date_heure->lt($todayStart) || !$rdv->date_heure;
-        });
+        $rdvAujourdhui = $allRdvs->filter(fn($r) =>
+            $r->date_heure && $r->date_heure->between($todayStart, $todayEnd)
+        );
 
-        return view('hopital.rdv', compact('allRdvs', 'rdvAujourdhui', 'rdvAVenir', 'rdvHistorique'));
+        $rdvAVenir = $allRdvs->filter(fn($r) =>
+            $r->date_heure && $r->date_heure->gt($todayEnd) && $r->statut !== 'annule'
+        );
+
+        $rdvHistorique = $allRdvs->filter(fn($r) =>
+            ($r->date_heure && $r->date_heure->lt($todayStart)) || !$r->date_heure
+        );
+
+        return view('hopital.rdv', compact('allRdvs', 'rdvEnAttente', 'rdvAujourdhui', 'rdvAVenir', 'rdvHistorique'));
     }
 
     public function updateRdvStatut(Request $request, $id)
@@ -111,7 +139,13 @@ class HopitalDashboardController extends Controller
 
     public function medecins()
     {
-        $medecins = User::where('role', 'medecin')->with('medecin.specialite')->get();
+        $hopital = Auth::user()->hopital;
+        $medecins = User::where('role', 'medecin')
+            ->whereHas('medecin', function($q) use ($hopital) {
+                $q->where('hopital_id', $hopital->id);
+            })
+            ->with(['medecin.specialite', 'medecin.rendezVous'])
+            ->get();
         return view('hopital.medecins', compact('medecins'));
     }
 
@@ -120,9 +154,23 @@ class HopitalDashboardController extends Controller
         return view('hopital.medecins-create');
     }
 
+    public function medecinsEdit($id)
+    {
+        $medecinUser = User::where('role', 'medecin')->findOrFail($id);
+        return view('hopital.medecins-edit', compact('medecinUser'));
+    }
+
     public function urgences()
     {
-        $urgences = Urgence::with('patient')->latest()->get();
+        $hopital = Auth::user()->hopital;
+        $toutesUrgences = Urgence::with('patient')->latest()->get();
+        
+        // Filtre : uniquement les urgences à moins de 15km (ou celles sans GPS)
+        $urgences = $toutesUrgences->filter(function($u) use ($hopital) {
+            $dist = $this->calculateDistance($hopital->latitude, $hopital->longitude, $u->latitude, $u->longitude);
+            return $dist <= 15;
+        })->values();
+
         return view('hopital.urgences', compact('urgences'));
     }
 
@@ -133,7 +181,14 @@ class HopitalDashboardController extends Controller
 
     public function countUrgences()
     {
-        return response()->json(Urgence::where('statut', 'en_cours')->count());
+        $hopital = Auth::user()->hopital;
+        $all = Urgence::where('statut', 'en_cours')->get();
+        $count = $all->filter(function($u) use ($hopital) {
+            $dist = $this->calculateDistance($hopital->latitude, $hopital->longitude, $u->latitude, $u->longitude);
+            return $dist <= 15;
+        })->count();
+        
+        return response()->json($count);
     }
 
     public function resolveUrgence($id)

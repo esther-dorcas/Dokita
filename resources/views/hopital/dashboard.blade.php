@@ -93,7 +93,7 @@
                 <tbody>
                     @forelse($recentDemandes as $rdv)
                     <tr>
-                        <td><strong>{{ $rdv->patient->user->name ?? 'Anonyme' }}</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">{{ $rdv->created_at->format('H:i') }} - {{ $rdv->patient->user->telephone ?? '' }}</span></td>
+                        <td><strong>{{ $rdv->patient->name ?? 'Anonyme' }}</strong><br><span style="font-size:11px; color:#64748b; font-weight:400;">{{ $rdv->created_at->format('H:i') }} - {{ $rdv->patient->telephone ?? '' }}</span></td>
                         <td>{{ $rdv->motif ?? 'Consultation' }}</td>
                         <td>
                             <span class="status-badge {{ $rdv->statut === 'urgent' ? 'urgent' : ($rdv->statut === 'en_attente' ? 'waiting' : 'active') }}">

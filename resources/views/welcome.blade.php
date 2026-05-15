@@ -164,15 +164,15 @@
                     <div class="grid grid-cols-3 gap-8 border-t border-white/10 pt-10 max-w-lg">
                         <div>
                             <p class="text-3xl sm:text-4xl font-black text-white">{{ max(0, count($hopitaux)) }}</p>
-                            <p class="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold mt-1">Hôpitaux</p>
+                            <p class="text-[10px] uppercase tracking-[0.2em] text-white font-bold mt-1">Hôpitaux</p>
                         </div>
                         <div class="border-l border-white/10 pl-8">
                             <p class="text-3xl sm:text-4xl font-black text-white">+1.2k</p>
-                            <p class="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold mt-1">RDV / mois</p>
+                            <p class="text-[10px] uppercase tracking-[0.2em] text-white font-bold mt-1">RDV / mois</p>
                         </div>
                         <div class="border-l border-white/10 pl-8">
                             <p class="text-3xl sm:text-4xl font-black text-white">24/7</p>
-                            <p class="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold mt-1">Disponible</p>
+                            <p class="text-[10px] uppercase tracking-[0.2em] text-white font-bold mt-1">Disponible</p>
                         </div>
                     </div>
                 </div>
@@ -273,37 +273,88 @@
                 </div>
             </div>
         </section>
+         {{-- ══════════ NOS ENGAGEMENTS ══════════ --}}
+<section class="py-24 relative overflow-hidden bg-white" id="engagements">
+    {{-- Décoration de fond --}}
+    <div class="absolute inset-0 z-0">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-cyan-500/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
+    </div>
 
-        {{-- ══════════ CHIFFRES CLÉS ══════════ --}}
-        <section class="py-20 bg-slate-50" id="chiffres">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-14 reveal">
-                    <h2 class="text-3xl md:text-4xl font-black text-slate-900 mt-2">Une plateforme qui grandit avec vous</h2>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-20 reveal pt-6">
+            
+            <h2 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
+                Les valeurs qui guident <br class="hidden md:block"/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">chaque décision</span>
+            </h2>
+            <p class="mt-6 text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed font-medium">
+                Dokita est construite autour de principes clairs et inébranlables, au service de la santé des patients et du quotidien des professionnels au Bénin.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 reveal">
+
+            {{-- Accessibilité --}}
+            <div class="group relative bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(8,145,178,0.1)] hover:-translate-y-2 transition-all duration-500 overflow-hidden text-center flex flex-col items-center">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                <div class="w-20 h-20 mb-6 rounded-2xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                    <svg class="w-10 h-10 text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
                 </div>
-                <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    @php
-                        $stats = [
-                            ['num'=>max(0,count($hopitaux)),'suffix'=>'','label'=>'Hôpitaux référencés','trend'=>'+12 ce mois','icon'=>'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5'],
-                            ['num'=>'1.2k','suffix'=>'+','label'=>'RDV pris ce mois','trend'=>'+18% vs mois passé','icon'=>'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
-                            ['num'=>'250','suffix'=>'+','label'=>'Médecins inscrits','trend'=>'+8 nouveaux','icon'=>'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
-                            ['num'=>'98','suffix'=>'%','label'=>'Taux de satisfaction','trend'=>'Basé sur 800 avis','icon'=>'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z'],
-                        ];
-                    @endphp
-                    @foreach($stats as $s)
-                    <div class="stat-card reveal">
-                        <div style="width:42px;height:42px;border-radius:0.875rem;background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.22);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
-                            <svg style="width:20px;height:20px;color:#22d3ee;" fill="none" stroke="#22d3ee" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $s['icon'] }}"/>
-                            </svg>
-                        </div>
-                        <p class="stat-number">{{ $s['num'] }}<span style="font-size:1.5rem;color:#22d3ee;">{{ $s['suffix'] }}</span></p>
-                        <p class="stat-label">{{ $s['label'] }}</p>
-                        <div class="stat-trend">↑ {{ $s['trend'] }}</div>
-                    </div>
-                    @endforeach
-                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Accessibilité</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Une solution utilisable sur n'importe quel appareil, sans installation. Pensée pour tous les citoyens, où qu'ils soient.
+                </p>
             </div>
-        </section>
+
+            {{-- Sécurité --}}
+            <div class="group relative bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(8,145,178,0.1)] hover:-translate-y-2 transition-all duration-500 overflow-hidden text-center flex flex-col items-center">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                <div class="w-20 h-20 mb-6 rounded-2xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                    <svg class="w-10 h-10 text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Sécurité absolue</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Vos données médicales sont strictement confidentielles, chiffrées de bout en bout et hébergées en toute sécurité.
+                </p>
+            </div>
+
+            {{-- Simplicité --}}
+            <div class="group relative bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(8,145,178,0.1)] hover:-translate-y-2 transition-all duration-500 overflow-hidden text-center flex flex-col items-center">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                <div class="w-20 h-20 mb-6 rounded-2xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                    <svg class="w-10 h-10 text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Simplicité</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Une interface épurée et intuitive. Trouver un soin ou consulter son dossier ne prend que quelques clics.
+                </p>
+            </div>
+
+            {{-- Rapidité --}}
+            <div class="group relative bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(8,145,178,0.1)] hover:-translate-y-2 transition-all duration-500 overflow-hidden text-center flex flex-col items-center">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                <div class="w-20 h-20 mb-6 rounded-2xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                    <svg class="w-10 h-10 text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Immédiateté</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Fini les files d'attente interminables. Les urgences et la prise en charge sont signalées en temps réel.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
 
         {{-- ══════════ COMMENT ÇA MARCHE ══════════ --}}
         <section class="py-20 bg-white overflow-hidden" id="comment">
@@ -483,7 +534,7 @@
 
                     <div class="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
                         <div class="text-left">
-                            <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 text-cyan-400 text-xs font-black uppercase tracking-widest mb-6 border border-white/10">
+                            <span class="inline-block px-4 py-1.5 rounded-full bg-white text-cyan-400 text-xs font-black uppercase tracking-widest mb-6 border border-white/10">
                                 Prêt à commencer ?
                             </span>
                             <h2 class="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
@@ -510,7 +561,7 @@
                                         <div class="w-3 h-3 rounded-full bg-yellow-400/50"></div>
                                         <div class="w-3 h-3 rounded-full bg-green-400/50"></div>
                                     </div>
-                                    <div class="text-[10px] font-black text-white/40 uppercase tracking-widest">Dokita Interface</div>
+                                    <div class="text-[10px] font-black text-white uppercase tracking-widest">Dokita Interface</div>
                                 </div>
                                 <div class="space-y-4">
                                     <div class="h-10 bg-white/10 rounded-xl w-3/4"></div>
@@ -538,51 +589,7 @@
 
     </main>
 
-    {{-- ══ FOOTER (inchangé) ══ --}}
-    <footer class="bg-slate-950 text-slate-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="grid gap-12 lg:grid-cols-4">
-                <div>
-                    <span class="inline-flex items-center justify-center border-2 border-white/30 px-3 py-1.5 rounded-lg">
-                        <span class="text-white font-black text-lg">Dokita</span>
-                    </span>
-                    <p class="mt-4 text-sm leading-7 text-slate-400">Plateforme e-santé pour la prise de rendez-vous, la géolocalisation d'hôpitaux et les rappels automatiques au Bénin.</p>
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        <a href="#"    class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">Support</a>
-                        <a href="{{ route('faq') }}" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">FAQ</a>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Navigation</h3>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="#hospitaux"   class="hover:text-white transition font-semibold">Hôpitaux</a></li>
-                        <li><a href="#medecins"    class="hover:text-white transition font-semibold">Médecins</a></li>
-                        <li><a href="#temoignages" class="hover:text-white transition font-semibold">Témoignages</a></li>
-                        <li><a href="{{ route('faq') }}" class="hover:text-white transition font-semibold">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Contact</h3>
-                    <p class="text-sm text-slate-400">support@dokita.bj</p>
-                    <p class="mt-3 text-sm text-slate-400">+229 90 00 00 00</p>
-                    <p class="mt-3 text-xs text-slate-500">Lun–Ven 08:00–18:00</p>
-                </div>
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Réseaux</h3>
-                    <div class="flex flex-wrap gap-3 text-white">
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">FB</a>
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">TW</a>
-                        <a href="#" class="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">IG</a>
-                    </div>
-                    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-                        <p class="text-xs uppercase tracking-widest text-slate-500 font-bold">Sécurité</p>
-                        <p class="mt-2 text-sm text-slate-400 leading-relaxed">Vos informations sont protégées et utilisées uniquement pour la gestion des rendez-vous.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-slate-800 pt-8 text-xs text-slate-600 text-center">© {{ date('Y') }} Dokita. Tous droits réservés.</div>
-        </div>
-    </footer>
+    @include('partials.footer')
 
 </div>
 
@@ -618,216 +625,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
-{{-- ══ BOUTON SOS FLOTTANT ══ --}}
-<style>
-    /* Bouton flottant */
-    #sos-btn {
-        position: fixed; bottom: 28px; right: 28px; z-index: 1000;
-        width: 64px; height: 64px; border-radius: 50%;
-        background: #dc2626; border: none; cursor: pointer;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-        box-shadow: 0 4px 20px rgba(220,38,38,.5);
-        transition: transform .2s, box-shadow .2s;
-    }
-    #sos-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(220,38,38,.65); }
-    #sos-btn::before {
-        content: '';
-        position: absolute; inset: -6px; border-radius: 50%;
-        border: 3px solid rgba(220,38,38,.4);
-        animation: sos-pulse 1.8s ease-out infinite;
-    }
-    @keyframes sos-pulse {
-        0%   { transform: scale(1);   opacity: 1; }
-        100% { transform: scale(1.55); opacity: 0; }
-    }
-    #sos-btn span { font-size: 11px; font-weight: 900; color: #fff; letter-spacing: .05em; line-height: 1; }
+@include('partials.samu-modal')
 
-    /* Overlay */
-    #sos-overlay {
-        display: none; position: fixed; inset: 0; z-index: 1100;
-        background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
-        align-items: center; justify-content: center; padding: 16px;
-    }
-    #sos-overlay.open { display: flex; }
-
-    /* Modal */
-    #sos-modal {
-        background: #fff; border-radius: 24px; width: 100%; max-width: 480px;
-        box-shadow: 0 30px 80px rgba(0,0,0,.3);
-        animation: modal-in .25s cubic-bezier(.2,.8,.2,1);
-        overflow: hidden;
-    }
-    @keyframes modal-in { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:none; } }
-
-    .sos-head {
-        background: #dc2626; padding: 22px 24px;
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .sos-head-title { display: flex; align-items: center; gap: 10px; }
-    .sos-head-title svg { color: #fff; }
-    .sos-head-title h2 { font-size: 18px; font-weight: 900; color: #fff; margin: 0; }
-    .sos-head-title p  { font-size: 12px; color: rgba(255,255,255,.75); margin: 2px 0 0; }
-    .sos-close { background: rgba(255,255,255,.2); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
-    .sos-close:hover { background: rgba(255,255,255,.35); }
-
-    .sos-body { padding: 24px; }
-    .sos-field { margin-bottom: 14px; }
-    .sos-label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 5px; }
-    .sos-input {
-        width: 100%; padding: 11px 13px; border: 1.5px solid #e2e8f0;
-        border-radius: 10px; font-size: 13px; font-weight: 600; color: #0f172a;
-        background: #f8fafc; outline: none; font-family: inherit; transition: .15s; box-sizing: border-box;
-    }
-    .sos-input:focus { background: #fff; border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.1); }
-    textarea.sos-input { resize: none; min-height: 90px; }
-
-    .sos-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .sos-loc {
-        display: flex; align-items: center; gap: 8px; padding: 10px 13px;
-        background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 10px;
-        font-size: 12px; font-weight: 700; color: #c2410c; cursor: pointer;
-        transition: .15s; margin-bottom: 14px;
-    }
-    .sos-loc:hover { background: #ffedd5; }
-
-    .sos-submit {
-        width: 100%; padding: 14px; border: none; border-radius: 12px;
-        background: #dc2626; color: #fff; font-size: 14px; font-weight: 800;
-        cursor: pointer; transition: .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-        font-family: inherit;
-    }
-    .sos-submit:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(220,38,38,.35); }
-    .sos-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-
-    /* Succès */
-    #sos-success { display: none; padding: 32px 24px; text-align: center; }
-    #sos-success.show { display: block; }
-    #sos-success .check { width: 60px; height: 60px; border-radius: 50%; background: #f0fdf4; border: 2px solid #bbf7d0; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
-</style>
-
-{{-- Bouton --}}
-<button id="sos-btn" onclick="document.getElementById('sos-overlay').classList.add('open')" aria-label="Signaler une urgence médicale">
-    <svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-    <span>SOS</span>
-</button>
-
-{{-- Overlay + Modal --}}
-<div id="sos-overlay" onclick="if(event.target===this)closeSos()">
-    <div id="sos-modal">
-
-        {{-- En-tête rouge --}}
-        <div class="sos-head">
-            <div class="sos-head-title">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                <div>
-                    <h2>Signaler une urgence</h2>
-                    <p>Votre demande sera transmise immédiatement</p>
-                </div>
-            </div>
-            <button class="sos-close" onclick="closeSos()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-
-        {{-- Formulaire --}}
-        <div id="sos-form-wrap">
-            <div class="sos-body">
-                <form id="sos-form">
-                    @csrf
-                    <div class="sos-row">
-                        <div class="sos-field">
-                            <label class="sos-label">Votre nom <span style="color:#dc2626">*</span></label>
-                            <input class="sos-input" type="text" name="nom_appelant" placeholder="Ex : Jean SOGLO" required>
-                        </div>
-                        <div class="sos-field">
-                            <label class="sos-label">Téléphone <span style="color:#dc2626">*</span></label>
-                            <input class="sos-input" type="tel" name="telephone" placeholder="+229 97 XX XX XX" required>
-                        </div>
-                    </div>
-
-                    <div class="sos-field">
-                        <label class="sos-label">Description de l'urgence <span style="color:#dc2626">*</span></label>
-                        <textarea class="sos-input" name="description" placeholder="Décrivez rapidement la situation : symptômes, nombre de personnes concernées…" required></textarea>
-                    </div>
-
-                    <button type="button" class="sos-loc" onclick="detectLocation()">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                        <span id="loc-text">Détecter ma position automatiquement</span>
-                    </button>
-                    <input type="hidden" name="localisation" id="sos-localisation">
-                    <input type="hidden" name="latitude"     id="sos-lat">
-                    <input type="hidden" name="longitude"    id="sos-lng">
-
-                    <button type="submit" class="sos-submit" id="sos-submit-btn">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                        Envoyer l'alerte d'urgence
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        {{-- Message de succès --}}
-        <div id="sos-success">
-            <div class="check">
-                <svg width="28" height="28" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <h3 style="font-size:18px; font-weight:900; color:#0f172a; margin-bottom:8px;">Alerte envoyée !</h3>
-            <p style="font-size:13px; color:#64748b; line-height:1.6; max-width:320px; margin:0 auto 20px;">Votre signalement a bien été transmis. Les services médicaux vont vous contacter rapidement.</p>
-            <p style="font-size:12px; font-weight:700; color:#dc2626;">En cas de danger immédiat, appelez le <strong>116</strong> (SAMU Bénin)</p>
-            <button onclick="closeSos()" style="margin-top:20px; padding:10px 24px; border-radius:10px; border:1.5px solid #e2e8f0; background:#f8fafc; font-size:13px; font-weight:700; color:#475569; cursor:pointer;">Fermer</button>
-        </div>
-
-    </div>
-</div>
-
-<script>
-function closeSos() {
-    document.getElementById('sos-overlay').classList.remove('open');
-    // reset
-    document.getElementById('sos-form').reset();
-    document.getElementById('sos-form-wrap').style.display = '';
-    document.getElementById('sos-success').classList.remove('show');
-    document.getElementById('loc-text').textContent = 'Détecter ma position automatiquement';
-}
-
-function detectLocation() {
-    if (!navigator.geolocation) return;
-    document.getElementById('loc-text').textContent = 'Localisation en cours…';
-    navigator.geolocation.getCurrentPosition(function(pos) {
-        document.getElementById('sos-lat').value = pos.coords.latitude;
-        document.getElementById('sos-lng').value = pos.coords.longitude;
-        document.getElementById('sos-localisation').value = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5);
-        document.getElementById('loc-text').textContent = '✓ Position détectée';
-    }, function() {
-        document.getElementById('loc-text').textContent = 'Position non disponible';
-    });
-}
-
-document.getElementById('sos-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('sos-submit-btn');
-    btn.disabled = true;
-    btn.textContent = 'Envoi en cours…';
-
-    const data = new FormData(this);
-    fetch('{{ route('urgence.publique') }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-        body: data
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.success) {
-            document.getElementById('sos-form-wrap').style.display = 'none';
-            document.getElementById('sos-success').classList.add('show');
-        }
-    })
-    .catch(() => {
-        btn.disabled = false;
-        btn.textContent = 'Envoyer l\'alerte d\'urgence';
-    });
-});
-</script>
 </body>
 </html>

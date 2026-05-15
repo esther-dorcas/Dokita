@@ -254,7 +254,7 @@
 
                     <div style="display:flex;flex-wrap:wrap;gap:1rem;">
                         <a href="{{ route('register') }}" class="btn-primary">Rejoindre le réseau</a>
-                        <a href="#medecins" class="btn-outline">Voir les médecins</a>
+                        <a href="{{ route('login') }}" class="btn-outline">Voir les médecins</a>
                     </div>
 
                     <div class="hero-stats">
@@ -351,7 +351,7 @@
             <div class="flex flex-col md:flex-row items-center gap-16 reveal">
                 <div class="w-full lg:w-1/2 flex justify-start">
                     <div class="relative max-w-md">
-                        <img src="/images/spe.jpg" alt="Améliorez votre quotidien" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
+                        <img src="/images/noi.jpg" alt="Améliorez votre quotidien" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
                     </div>
                 </div>
                 <div class="w-full lg:w-1/2 space-y-4">
@@ -395,7 +395,7 @@
                 {{-- Image à droite --}}
                 <div class="order-1 md:order-2 flex justify-end">
                     <div class="relative max-w-md">
-                        <img src="/images/spe1.jpg" alt="Mieux soigner" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
+                        <img src="/images/imb.jpg" alt="Mieux soigner" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
                     </div>
                 </div>
             </div>
@@ -404,7 +404,7 @@
             <div class="flex flex-col md:flex-row items-center gap-16 reveal">
                 <div class="w-full lg:w-1/2 flex justify-start pt-12">
                     <div class="relative max-w-md">
-                        <img src="/images/spe3.jpg" alt="Equipe médicale" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
+                        <img src="/images/afri.jpg" alt="Equipe médicale" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
                     </div>
                 </div>
                 <div class="w-full lg:w-1/2 space-y-4 pb-12">
@@ -459,7 +459,7 @@
                             {{-- Image à gauche --}}
                             <div class="reveal">
                                 <template x-if="tab === 'praticiens'">
-                                    <img src="/images/spe1.jpg" alt="Praticiens" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
+                                    <img src="/images/afro.jpg" alt="Praticiens" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
                                 </template>
                                 <template x-if="tab === 'etablissements'">
                                     <img src="/images/et.jpg" alt="Établissements" class="w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/3]">
@@ -617,51 +617,7 @@
 
 </div>
 
-{{-- ══ FOOTER (inchangé) ══ --}}
-<footer class="bg-slate-950 text-slate-300 w-full border-t border-slate-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="grid gap-12 lg:grid-cols-4">
-            <div>
-                <span class="inline-flex items-center justify-center border-2 border-white/30 px-3 py-1.5 rounded-lg">
-                    <span class="text-white font-black text-lg">Dokita</span>
-                </span>
-                <p class="mt-4 text-sm leading-7 text-slate-300">Plateforme e-santé pour la prise de rendez-vous, la géolocalisation d'hôpitaux et les rappels automatiques au Bénin.</p>
-                <div class="mt-6 flex flex-wrap gap-3">
-                    <a href="#"                  class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">Support</a>
-                    <a href="{{ route('faq') }}" class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition">FAQ</a>
-                </div>
-            </div>
-            <div>
-                <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Navigation</h3>
-                <ul class="space-y-3 text-sm">
-                    <li><a href="{{ route('home') }}#hospitaux"   class="hover:text-white transition font-semibold">Hôpitaux</a></li>
-                    <li><a href="{{ route('home') }}#medecins"    class="hover:text-white transition font-semibold">Médecins</a></li>
-                    <li><a href="{{ route('home') }}#services"    class="hover:text-white transition font-semibold">Services</a></li>
-                    <li><a href="{{ route('home') }}#temoignages" class="hover:text-white transition font-semibold">Témoignages</a></li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Contact</h3>
-                <p class="text-sm text-slate-300">support@dokita.bj</p>
-                <p class="mt-3 text-sm text-slate-300">+229 90 00 00 00</p>
-                <p class="mt-3 text-xs text-slate-400">Lun–Ven 08:00–18:00</p>
-            </div>
-            <div>
-                <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Réseaux</h3>
-                <div class="flex flex-wrap gap-3 text-white">
-                    <a href="#" class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">FB</a>
-                    <a href="#" class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">TW</a>
-                    <a href="#" class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">IG</a>
-                </div>
-                <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-                    <p class="text-xs uppercase tracking-widest text-slate-500 font-bold">Sécurité</p>
-                    <p class="mt-2 text-sm text-slate-300 leading-relaxed">Vos informations sont protégées et utilisées uniquement pour la gestion des rendez-vous.</p>
-                </div>
-            </div>
-        </div>
-        <div class="mt-12 border-t border-slate-700 pt-8 text-xs text-slate-400 text-center">© {{ date('Y') }} Dokita. Tous droits réservés.</div>
-    </div>
-</footer>
+@include('partials.footer')
 
 <script>
 (function(){
@@ -672,5 +628,6 @@
 })();
 </script>
 
+@include('partials.samu-modal')
 </body>
 </html>

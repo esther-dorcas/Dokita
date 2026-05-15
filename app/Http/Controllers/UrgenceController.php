@@ -37,8 +37,8 @@ class UrgenceController extends Controller
     public function storePublic(Request $request)
     {
         $request->validate([
-            'nom_appelant' => ['required', 'string', 'max:255'],
-            'telephone'    => ['required', 'string', 'max:30'],
+            'nom_appelant' => ['nullable', 'string', 'max:255'],
+            'telephone'    => ['nullable', 'string', 'max:30'],
             'description'  => ['required', 'string', 'max:1000'],
             'localisation' => ['nullable', 'string', 'max:255'],
             'latitude'     => ['nullable', 'numeric'],
@@ -47,10 +47,10 @@ class UrgenceController extends Controller
 
         Urgence::create([
             'patient_id'   => null,
-            'nom_appelant' => $request->nom_appelant,
-            'telephone'    => $request->telephone,
+            'nom_appelant' => $request->nom_appelant ?? 'Alerte SAMU (Anonyme)',
+            'telephone'    => $request->telephone ?? 'Non spécifié',
             'description'  => $request->description,
-            'localisation' => $request->localisation,
+            'localisation' => $request->localisation ?? 'Géolocalisation GPS',
             'latitude'     => $request->latitude,
             'longitude'    => $request->longitude,
             'statut'       => 'en_cours',

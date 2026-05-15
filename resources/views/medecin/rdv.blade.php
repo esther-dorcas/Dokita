@@ -97,6 +97,19 @@
         </div>
     </div>
 
+    {{-- Bannière RDV en attente de confirmation hôpital --}}
+    @if(isset($enAttenteCount) && $enAttenteCount > 0)
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <div style="width:36px;height:36px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+            <div style="font-size:14px;font-weight:800;color:#1e40af;">{{ $enAttenteCount }} rendez-vous en attente de validation</div>
+            <div style="font-size:12px;color:#3b82f6;">Ces rendez-vous ne s'afficheront ici qu'une fois confirmés par l'hôpital.</div>
+        </div>
+    </div>
+    @endif
+
     {{-- GRID --}}
     <div class="patient-grid">
         

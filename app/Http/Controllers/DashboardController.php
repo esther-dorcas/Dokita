@@ -19,11 +19,7 @@ class DashboardController extends Controller
             return redirect()->route('hopital.dashboard');
         }
 
-        if ($user->role === 'patient' && !$user->patient) {
-            \App\Models\Patient::create(['user_id' => $user->id]);
-        }
-
-        $patient = $user->patient;
+        $patient = \App\Models\Patient::firstOrCreate(['user_id' => $user->id]);
 
         $upcomingRendezVous = $user->rendezVous()
             ->where('date_heure', '>=', now())

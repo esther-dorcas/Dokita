@@ -34,7 +34,8 @@
 
     .status-dot { position: absolute; top: 24px; right: 24px; width: 10px; height: 10px; border-radius: 50%; }
     .status-dot.active { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.1); }
-    .status-dot.busy { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+    .status-dot.busy { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.1); }
+    .status-dot.absent { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,.1); }
 </style>
 @endpush
 
@@ -58,9 +59,34 @@
             @php
                 $nameParts = explode(' ', $medecin->name);
                 $initials  = strtoupper(substr($nameParts[0], 0, 1) . substr($nameParts[1] ?? '', 0, 1));
+                
+                $medModel = $medecin->medecin;
+                $isAbsent = $medModel && $medModel->statut === 'inactif';
+                $inConsultation = false;
+                
+                if (!$isAbsent && $medModel && $medModel->rendezVous) {
+                    $now = now();
+                    $inConsultation = $medModel->rendezVous->contains(function ($rdv) use ($now) {
+                        if ($rdv->statut !== 'confirme' || !$rdv->date_heure) return false;
+                        $start = $rdv->date_heure;
+                        $end = $start->copy()->addMinutes(30);
+                        return $now->between($start, $end);
+                    });
+                }
+
+                if ($isAbsent) {
+                    $statusClass = 'absent';
+                    $statusTitle = 'Absent';
+                } elseif ($inConsultation) {
+                    $statusClass = 'busy';
+                    $statusTitle = 'En consultation';
+                } else {
+                    $statusClass = 'active';
+                    $statusTitle = 'Disponible';
+                }
             @endphp
             <div class="doc-card">
-                <div class="status-dot active" title="Disponible"></div>
+                <div class="status-dot {{ $statusClass }}" title="{{ $statusTitle }}"></div>
                 <div class="doc-head">
                     <div class="doc-av">{{ $initials }}</div>
                     <div>
@@ -73,7 +99,7 @@
                     <div class="stat"><div class="stat-v">{{ rand(100, 999) }}</div><div class="stat-l">Patients</div></div>
                     <div class="stat"><div class="stat-v">4.{{ rand(5, 9) }}/5</div><div class="stat-l">Avis</div></div>
                 </div>
-                <a href="#" class="btn-action">Gérer le profil</a>
+                <a href="{{ route('hopital.medecins.edit', $medecin->id) }}" class="btn-action">Gérer le profil</a>
             </div>
         @empty
             <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: #64748b; font-size: 14px; background: #fff; border-radius: 16px; border: 1px dashed #cbd5e1;">

@@ -108,6 +108,19 @@
         border: 1px solid #e2e8f0; transition: 0.2s; text-decoration: none;
     }
     .btn-sec:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    /* ── FIX INPUT NUMBER SPINNERS ── */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+    .field-input-small {
+        padding: 12px 4px !important;
+    }
 </style>
 @endpush
 
@@ -131,7 +144,7 @@
     </div>
 
     {{-- ══ PROFILE GRID ══ --}}
-    <form action="{{ route('profile.update') }}" method="POST">
+    <form action="{{ route('patient.profil.update') }}" method="POST">
         @csrf
         @method('PATCH')
         
@@ -139,6 +152,13 @@
             
             {{-- COLONNE GAUCHE : FORMULAIRES --}}
             <div class="space-y-6">
+
+                {{-- MESSAGE DE SUCCÈS --}}
+                @if(session('success'))
+                    <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 16px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(16,185,129,0.1);">
+                        {{ session('success') }}
+                    </div>
+                @endif
                 
                 {{-- SECTION 1 : INFOS GÉNÉRALES --}}
                 <div class="form-card">
@@ -158,7 +178,7 @@
                     <div class="form-row">
                         <div class="field-group mb-0">
                             <label class="field-label">Téléphone</label>
-                            <input type="text" name="telephone" value="{{ Auth::user()->telephone }}" placeholder="+229 00 00 00 00" class="field-input">
+                            <input type="tel" name="telephone" value="{{ Auth::user()->telephone }}" placeholder="+229 00 00 00 00" class="field-input" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
                         </div>
                         <div class="field-group mb-0">
                             <label class="field-label">Date de Naissance</label>
@@ -174,11 +194,11 @@
                         <div class="form-row">
                             <div>
                                 <label class="field-label !text-red-800">Nom du contact</label>
-                                <input type="text" name="ice_name" value="{{ $patient->ice_name ?? '' }}" placeholder="Ex: Mère, Conjoint..." class="field-input">
+                                <input type="text" name="contact_urgence_nom" value="{{ $patient->contact_urgence_nom ?? '' }}" placeholder="Ex: Mère, Conjoint..." class="field-input">
                             </div>
                             <div>
                                 <label class="field-label !text-red-800">Téléphone urgence</label>
-                                <input type="text" name="ice_phone" value="{{ $patient->ice_phone ?? '' }}" class="field-input">
+                                <input type="tel" name="contact_urgence_tel" value="{{ $patient->contact_urgence_tel ?? '' }}" placeholder="Ex: 0144597009" class="field-input" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
                             </div>
                         </div>
                     </div>
@@ -198,21 +218,34 @@
                     <div class="space-y-4">
                         <div class="vital-stat-mini">
                             <div class="vital-label">Groupe Sanguin</div>
-                            <select name="blood_group" class="field-input mt-2 text-center !font-bold">
+                            <select name="groupe_sanguin" class="field-input mt-2 text-center !font-bold">
+                                <option value="">Inconnu</option>
                                 @foreach(['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'] as $g)
-                                    <option value="{{ $g }}" {{ (isset($patient) && $patient->blood_group == $g) ? 'selected' : '' }}>{{ $g }}</option>
+                                    <option value="{{ $g }}" {{ (isset($patient) && $patient->groupe_sanguin == $g) ? 'selected' : '' }}>{{ $g }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div class="vital-stat-mini">
                                 <div class="vital-label">Taille (cm)</div>
-                                <input type="number" name="height" value="{{ $patient->height ?? '175' }}" class="field-input mt-2 text-center !font-bold">
+                                <input type="number" name="taille" value="{{ $patient->taille ?? '' }}" placeholder="Ex: 175" class="field-input field-input-small mt-2 text-center !font-bold">
                             </div>
                             <div class="vital-stat-mini">
                                 <div class="vital-label">Poids (kg)</div>
-                                <input type="number" name="weight" value="{{ $patient->weight ?? '72' }}" class="field-input mt-2 text-center !font-bold">
+                                <input type="number" name="poids" value="{{ $patient->poids ?? '' }}" placeholder="Ex: 72" class="field-input field-input-small mt-2 text-center !font-bold">
                             </div>
+                            <div class="vital-stat-mini">
+                                <div class="vital-label">Tension</div>
+                                <input type="text" name="tension" value="{{ $patient->tension ?? '' }}" placeholder="12/8" class="field-input field-input-small mt-2 text-center !font-bold">
+                            </div>
+                        </div>
+                        <div class="vital-stat-mini mt-4" style="text-align: left;">
+                            <div class="vital-label text-center mb-2">Allergies connues</div>
+                            <div id="allergies-container" class="field-input mt-2" style="min-height: 48px; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; cursor: text;">
+                                <input type="text" id="allergy-input" placeholder="Ajouter une allergie... (Entrée)" style="border: none; outline: none; background: transparent; flex-grow: 1; min-width: 150px; font-size: 13px; font-weight: 600; color: #0f172a;">
+                            </div>
+                            <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-top: 6px;">Appuyez sur <kbd style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-size:9px;">Entrée</kbd> pour valider une allergie.</p>
+                            <input type="hidden" name="allergies" id="allergies-hidden" value="{{ $patient->allergies ?? '' }}">
                         </div>
                     </div>
                 </div>
@@ -232,4 +265,62 @@
     </form>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('allergy-input');
+        const container = document.getElementById('allergies-container');
+        const hidden = document.getElementById('allergies-hidden');
+        
+        // Parse existing allergies (handling commas and newlines)
+        let tags = hidden.value ? hidden.value.split(/[,;\n]+/).map(t => t.trim()).filter(t => t) : [];
+
+        function renderTags() {
+            // Clear existing UI tags
+            document.querySelectorAll('.allergy-tag').forEach(el => el.remove());
+            
+            tags.forEach((tag, index) => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'allergy-tag';
+                tagEl.style.cssText = 'background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #fecaca; box-shadow: 0 2px 4px rgba(220,38,38,0.05);';
+                tagEl.innerHTML = `
+                    ${tag}
+                    <button type="button" onclick="removeAllergy(${index})" style="background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; margin-top: -2px;">&times;</button>
+                `;
+                container.insertBefore(tagEl, input);
+            });
+            
+            // Update hidden input with comma-separated values
+            hidden.value = tags.join(',');
+        }
+
+        window.removeAllergy = function(index) {
+            tags.splice(index, 1);
+            renderTags();
+        };
+
+        // Handle Enter, Comma, and Backspace keys
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault(); // Prevent form submission
+                const val = this.value.trim().replace(',', '');
+                if (val && !tags.includes(val)) {
+                    tags.push(val);
+                    this.value = '';
+                    renderTags();
+                }
+            } else if (e.key === 'Backspace' && this.value === '' && tags.length > 0) {
+                // Delete last tag if backspace is pressed and input is empty
+                tags.pop();
+                renderTags();
+            }
+        });
+        
+        // Focus input when clicking anywhere in the container
+        container.addEventListener('click', () => input.focus());
+        
+        // Initial render
+        renderTags();
+    });
+</script>
 @endsection

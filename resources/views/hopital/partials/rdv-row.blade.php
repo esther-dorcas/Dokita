@@ -18,7 +18,7 @@
     </td>
     <td>
         <div style="font-weight: 700; color: #0f172a;">Dr. {{ $rdv->medecin->user->name ?? 'Non assigné' }}</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $rdv->medecin->specialite->nom ?? 'Généraliste' }}</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $rdv->medecin->specialite ?? 'Généraliste' }}</div>
     </td>
     <td>
         @if($rdv->statut === 'confirme')

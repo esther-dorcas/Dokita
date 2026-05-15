@@ -30,6 +30,13 @@
         font-size:13px;font-weight:600;color:#166534;
         margin-bottom:20px;
     }
+    .flash-error {
+        background:#fef2f2;border:1px solid #fecaca;
+        border-radius:12px;padding:12px 16px;
+        display:flex;align-items:center;gap:10px;
+        font-size:13px;font-weight:600;color:#991b1b;
+        margin-bottom:20px;
+    }
 
     /* ── HERO ── */
     .hero-img {
@@ -210,13 +217,13 @@
 <div class="animate-up">
 
     {{-- BACK --}}
-    <button onclick="history.back()" class="back-btn">
+    <a href="{{ route('hopitaux.index') }}" class="back-btn">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <line x1="19" y1="12" x2="5" y2="12"/>
             <polyline points="12 19 5 12 12 5"/>
         </svg>
         Retour aux résultats
-    </button>
+    </a>
 
     {{-- FLASH --}}
     @if(session('success'))
@@ -227,6 +234,30 @@
         </svg>
         {{ session('success') }}
     </div>
+    @endif
+
+    @if(session('error'))
+    <div class="flash-error">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ session('error') }}
+    </div>
+    @endif
+
+    @if(session('success') || session('error'))
+    <script>
+        // Désactiver la restauration automatique de la position par le navigateur
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        // Forcer immédiatement la remontée (sans smooth qui peut être annulé)
+        window.scrollTo(0, 0);
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(() => window.scrollTo(0, 0), 10);
+        });
+    </script>
     @endif
 
     {{-- HERO --}}
@@ -611,7 +642,7 @@ slots.forEach(btn => {
 });
 
 /* ── SCROLL AUTO VERS LE BOOKING SI MEDECIN DÉJÀ SÉLECTIONNÉ ── */
-@if(isset($medecin))
+@if(isset($medecin) && !session('success') && !session('error'))
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         document.getElementById('booking-form-section')

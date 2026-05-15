@@ -79,7 +79,12 @@
         <div class="hero-deco2"></div>
         <div class="hero-content">
             <h1 class="hero-title">Bonjour, Dr. {{ Auth::user()->name ?? 'Médecin' }}</h1>
-            <p class="hero-sub">Voici un résumé de votre activité pour aujourd'hui, {{ now()->translatedFormat('l d F Y') }}.</p>
+            <p class="hero-sub">
+                @if(Auth::user()->medecin && Auth::user()->medecin->hopital)
+                    Affecté à : <strong>{{ Auth::user()->medecin->hopital->nom }}</strong> | 
+                @endif
+                Résumé d'activité pour aujourd'hui, {{ now()->translatedFormat('l d F Y') }}.
+            </p>
         </div>
     </div>
 
@@ -122,10 +127,10 @@
                 <div class="rdv-item">
                     <div class="rdv-time">{{ $rdv->date_heure ? $rdv->date_heure->format('H:i') : '--:--' }}</div>
                     <div class="rdv-patient">
-                        <div class="rdv-name">{{ $rdv->patient->user->name ?? 'Patient Anonyme' }}</div>
+                        <div class="rdv-name">{{ $rdv->patient->name ?? 'Patient Anonyme' }}</div>
                         <div class="rdv-motif">{{ $rdv->motif ?? 'Pas de motif spécifié' }}</div>
                     </div>
-                    <a href="{{ route('medecin.consultation', ['name' => $rdv->patient->user->name ?? '', 'motif' => $rdv->motif ?? '']) }}" class="rdv-action">
+                    <a href="{{ route('medecin.consultation', ['name' => $rdv->patient->name ?? '', 'motif' => $rdv->motif ?? '']) }}" class="rdv-action">
                         {{ $rdv->date_heure && $rdv->date_heure->isToday() && $rdv->date_heure->isPast() ? 'Démarrer' : 'Préparer dossier' }}
                     </a>
                 </div>

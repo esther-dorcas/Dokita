@@ -55,9 +55,21 @@ class RendezvousController extends Controller
             return back()->with('error', 'Ce créneau est déjà réservé. Veuillez en choisir un autre.');
         }
 
+        // --- NOUVELLE LIMITE : Max 2 RDV par jour dans une même clinique ---
+        $rdvsCountToday = RendezVous::where('patient_id', Auth::id())
+            ->where('hopital_id', $medecin->hopital_id)
+            ->whereDate('date_heure', $dateHeure->toDateString())
+            ->where('statut', '!=', 'annule')
+            ->count();
+
+        if ($rdvsCountToday >= 2) {
+            return back()->with('error', 'Vous avez atteint la limite maximale de 2 rendez-vous par jour pour cette clinique.');
+        }
+
         $rdv = RendezVous::create([
             'patient_id'      => Auth::id(),
             'medecin_id'      => $medecin->id,
+            'hopital_id'      => $medecin->hopital_id,
             'date_heure'      => $dateHeure,
             'motif'           => $request->motif ?? 'Consultation médicale',
             'statut'          => 'en_attente',

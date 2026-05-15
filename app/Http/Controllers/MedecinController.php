@@ -52,6 +52,30 @@ class MedecinController extends Controller
 
     public function rdv()
     {
+        $user    = Auth::user();
+        $medecin = $user->medecin;
+
+        if (!$medecin) {
+            return redirect()->route('home')->with('error', 'Profil médecin non trouvé.');
+        }
+
+        // Le médecin ne voit QUE les RDV confirmés par l'hôpital
+        $appointments = RendezVous::where('medecin_id', $medecin->id)
+            ->whereIn('statut', ['confirme', 'reporte', 'termine'])
+            ->with('patient', 'hopital')
+            ->orderBy('date_heure', 'asc')
+            ->get();
+
+        // Compte des RDV en attente (info uniquement, pas encore visibles)
+        $enAttenteCount = RendezVous::where('medecin_id', $medecin->id)
+            ->where('statut', 'en_attente')
+            ->count();
+
+        return view('medecin.rdv', compact('appointments', 'enAttenteCount'));
+    }
+
+    public function planning()
+    {
         $user = Auth::user();
         $medecin = $user->medecin;
 
@@ -59,17 +83,27 @@ class MedecinController extends Controller
             return redirect()->route('home')->with('error', 'Profil médecin non trouvé.');
         }
 
-        $appointments = RendezVous::where('medecin_id', $medecin->id)
+        $rendezVous = RendezVous::where('medecin_id', $medecin->id)
+            ->whereNotIn('statut', ['annule'])
             ->with('patient')
-            ->orderBy('date_heure', 'desc')
             ->get();
 
-        return view('medecin.rdv', compact('appointments'));
-    }
+        $events = $rendezVous->map(function ($rdv) {
+            $isPast = Carbon::parse($rdv->date_heure)->isPast();
+            $patientName = $rdv->patient->name ?? 'Patient';
+            
+            return [
+                'title' => $patientName . ($isPast ? ' (Terminé)' : ''),
+                'start' => Carbon::parse($rdv->date_heure)->format('Y-m-d\TH:i:s'),
+                'end' => Carbon::parse($rdv->date_heure)->addMinutes(30)->format('Y-m-d\TH:i:s'),
+                'extendedProps' => [
+                    'isPast' => $isPast,
+                    'isUrgent' => str_contains(strtolower($rdv->motif ?? ''), 'urgence')
+                ]
+            ];
+        });
 
-    public function planning()
-    {
-        return view('medecin.planning');
+        return view('medecin.planning', ['eventsJson' => $events->toJson()]);
     }
 
     public function profil()

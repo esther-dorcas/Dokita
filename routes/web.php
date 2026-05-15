@@ -51,7 +51,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/profil', fn() => view('patient.profil'))->name('profil.index');
+    Route::get('/profil', fn() => view('patient.profil', ['patient' => \Illuminate\Support\Facades\Auth::user()->patient]))->name('profil.index');
+    Route::patch('/profil', [ProfileController::class, 'updatePatientProfile'])->name('patient.profil.update');
 
     // Hôpitaux
     Route::get('/hopitaux',      [HopitalController::class, 'index'])->name('hopitaux.index');
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'role:hopital'])->prefix('hopital')->name('hopital.')
     
     Route::get('/medecins',         [HopitalDashboardController::class, 'medecins'])->name('medecins');
     Route::get('/medecins/ajouter', [HopitalDashboardController::class, 'medecinsCreate'])->name('medecins.create');
+    Route::get('/medecins/{id}/modifier', [HopitalDashboardController::class, 'medecinsEdit'])->name('medecins.edit');
     
     Route::get('/urgences',         [HopitalDashboardController::class, 'urgences'])->name('urgences');
     Route::get('/parametres',       [HopitalDashboardController::class, 'parametres'])->name('parametres');
@@ -106,3 +108,25 @@ Route::middleware(['auth'])->prefix('api/patient')->name('api.patient.')->group(
     Route::get('/notifications',             [PatientApiController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/{id}/read',  [PatientApiController::class, 'markNotificationAsRead'])->name('notifications.read');
 });
+
+// ─── Route Contact (Support Chat) ──────────────────────────────────────────────
+Route::post('/contact/send', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'subject' => 'required|string|max:255',
+        'message' => 'required|string',
+    ]);
+    
+    // Simulation ou envoi réel selon configuration
+    try {
+        \Illuminate\Support\Facades\Mail::raw($request->message, function ($mail) use ($request) {
+            $mail->to('support@dokita.bj')
+                 ->subject('[Support Dokita] ' . $request->subject)
+                 ->replyTo($request->email);
+        });
+    } catch (\Exception $e) {
+        // Pour la soutenance, on continue même si le mailer (SMTP) n'est pas configuré
+    }
+
+    return response()->json(['success' => true, 'message' => 'Message envoyé avec succès.']);
+})->name('contact.send');

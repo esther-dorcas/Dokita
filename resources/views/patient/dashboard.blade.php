@@ -396,45 +396,26 @@
                     <span>Allergies &amp; Vigilances</span>
                 </div>
                 <div class="vig-body">
-                    {{--
-                        Quand tu auras la table patients avec allergies :
-                        @forelse($allergies as $allergie)
-                            <div class="vig-tag">
-                                <svg width="16" height="16" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                                </svg>
-                                <div>
-                                    <div class="vig-tag-name">{{ $allergie['nom'] }}</div>
-                                    <div class="vig-tag-type">{{ $allergie['type'] }}</div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="vig-empty">Aucune allergie renseignée.</div>
-                        @endforelse
-                    --}}
+                    @php
+                        $patient = Auth::user()->patient;
+                        $allergiesString = $patient ? $patient->allergies : '';
+                        $allergiesList = array_filter(array_map('trim', explode(',', $allergiesString)));
+                    @endphp
 
-                    {{-- Valeurs statiques en attendant la table patients --}}
-                    <div class="vig-tag">
-                        <svg width="16" height="16" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                        </svg>
-                        <div>
-                            <div class="vig-tag-name">Pénicilline</div>
-                            <div class="vig-tag-type">Allergie médicamenteuse</div>
+                    @forelse($allergiesList as $allergie)
+                        <div class="vig-tag">
+                            <svg width="16" height="16" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            </svg>
+                            <div>
+                                <div class="vig-tag-name">{{ $allergie }}</div>
+                                <div class="vig-tag-type">Signalé par le patient</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="vig-tag">
-                        <svg width="16" height="16" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                        </svg>
-                        <div>
-                            <div class="vig-tag-name">Arachides</div>
-                            <div class="vig-tag-type">Allergie alimentaire</div>
-                        </div>
-                    </div>
+                    @empty
+                        <div class="vig-empty">Aucune allergie renseignée.</div>
+                    @endforelse
                 </div>
             </div>
 
