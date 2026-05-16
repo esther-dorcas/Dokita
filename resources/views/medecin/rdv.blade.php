@@ -113,161 +113,65 @@
     {{-- GRID --}}
     <div class="patient-grid">
         
-        {{-- PATIENT 1 --}}
-        <div class="p-card">
-            <div class="p-header">
-                <div class="p-avatar">SJ</div>
-                <div>
-                    <div class="p-name">SOGLO Jean-Paul</div>
-                    <div class="p-id">#PT-2026-892</div>
-                </div>
-            </div>
-            <div class="p-body">
-                <div class="p-stat">Sexe / Âge : <strong>Homme, 42 ans</strong></div>
-                <div class="p-stat">Dernière Visite : <strong>Aujourd'hui</strong></div>
-                <div class="p-stat alert">Alerte Méd. : <strong>Allergie Pénicilline</strong></div>
-            </div>
-            <div class="p-actions">
-                <a href="{{ route('medecin.consultation', ['name' => 'SOGLO Jean-Paul', 'motif' => 'Ouverture du dossier depuis le répertoire']) }}" class="btn-dossier">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Dossier médical
-                </a>
-                <a href="{{ route('medecin.ordonnances', ['patient' => 'SOGLO Jean-Paul']) }}" class="btn-ord">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                    Ordonnance
-                </a>
-            </div>
-        </div>
+        @php
+            // On récupère la liste des patients uniques qui ont eu ou ont un RDV confirmé avec ce médecin
+            $patientsUniques = $appointments->unique('patient_id');
+        @endphp
 
-        {{-- PATIENT 2 --}}
-        <div class="p-card">
-            <div class="p-header">
-                <div class="p-avatar">AA</div>
-                <div>
-                    <div class="p-name">AMADOU Aminata</div>
-                    <div class="p-id">#PT-2025-104</div>
-                </div>
-            </div>
-            <div class="p-body">
-                <div class="p-stat">Sexe / Âge : <strong>Femme, 28 ans</strong></div>
-                <div class="p-stat">Dernière Visite : <strong>03 Mars 2026</strong></div>
-                <div class="p-stat">Alerte Méd. : <strong>Asthme (Léger)</strong></div>
-            </div>
-            <div class="p-actions">
-                <a href="{{ route('medecin.consultation', ['name' => 'AMADOU Aminata', 'motif' => 'Revue du dossier médical']) }}" class="btn-dossier">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Dossier médical
-                </a>
-                <a href="{{ route('medecin.ordonnances', ['patient' => 'AMADOU Aminata']) }}" class="btn-ord">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                    Ordonnance
-                </a>
-            </div>
-        </div>
+        @forelse($patientsUniques as $rdv)
+            @php
+                $patientUser = $rdv->patient;
+                $initials = collect(explode(' ', $patientUser->name))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('');
+                $age = $patientUser->birth_date ? \Carbon\Carbon::parse($patientUser->birth_date)->age . ' ans' : 'Age inconnu';
+                
+                // On cherche le dernier RDV passé pour afficher la date de "Dernière Visite"
+                $derniereVisite = $appointments->where('patient_id', $rdv->patient_id)
+                    ->where('date_heure', '<=', now())
+                    ->sortByDesc('date_heure')
+                    ->first();
+                
+                $dateVisite = $derniereVisite ? $derniereVisite->date_heure->translatedFormat('d M Y') : 'Aucune';
+                if ($derniereVisite && $derniereVisite->date_heure->isToday()) $dateVisite = "Aujourd'hui";
+                if ($derniereVisite && $derniereVisite->date_heure->isYesterday()) $dateVisite = "Hier";
 
-        {{-- PATIENT 3 --}}
-        <div class="p-card">
-            <div class="p-header">
-                <div class="p-avatar">DM</div>
-                <div>
-                    <div class="p-name">DOSSOU Maxime</div>
-                    <div class="p-id">#PT-2024-541</div>
+                $allergies = $patientUser->patient->allergies ?? 'Aucune';
+            @endphp
+            
+            <div class="p-card">
+                <div class="p-header">
+                    <div class="p-avatar">{{ $initials }}</div>
+                    <div>
+                        <div class="p-name">{{ $patientUser->name }}</div>
+                        <div class="p-id">#PT-{{ $patientUser->id }}-{{ date('Y') }}</div>
+                    </div>
+                </div>
+                <div class="p-body">
+                    <div class="p-stat">Âge : <strong>{{ $age }}</strong></div>
+                    <div class="p-stat">Dernière Visite : <strong>{{ $dateVisite }}</strong></div>
+                    <div class="p-stat {{ $allergies !== 'Aucune' ? 'alert' : '' }}">
+                        Alerte Méd. : <strong>{{ $allergies }}</strong>
+                    </div>
+                </div>
+                <div class="p-actions">
+                    <a href="{{ route('medecin.consultation', ['patient_id' => $patientUser->id, 'motif' => 'Consultation depuis le répertoire']) }}" class="btn-dossier">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Dossier médical
+                    </a>
+                    <a href="{{ route('medecin.ordonnances', ['patient' => $patientUser->name]) }}" class="btn-ord">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                        Ordonnance
+                    </a>
                 </div>
             </div>
-            <div class="p-body">
-                <div class="p-stat">Sexe / Âge : <strong>Homme, 55 ans</strong></div>
-                <div class="p-stat">Dernière Visite : <strong>15 Fév 2026</strong></div>
-                <div class="p-stat alert">Alerte Méd. : <strong>Diabète Type 2</strong></div>
+        @empty
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff; border-radius: 16px; border: 1.5px dashed #e2e8f0; color: #64748b;">
+                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 15px; opacity: 0.3;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <h3 style="font-weight: 800; color: #0f172a; margin-bottom: 5px;">Aucun patient répertorié</h3>
+                <p style="font-size: 13px;">Les patients apparaîtront ici dès qu'un de leurs rendez-vous sera confirmé par l'hôpital.</p>
             </div>
-            <div class="p-actions">
-                <a href="{{ route('medecin.consultation', ['name' => 'DOSSOU Maxime', 'motif' => 'Suivi de maladie chronique']) }}" class="btn-dossier">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Dossier médical
-                </a>
-                <a href="{{ route('medecin.ordonnances', ['patient' => 'DOSSOU Maxime']) }}" class="btn-ord">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                    Ordonnance
-                </a>
-            </div>
-        </div>
-
-        {{-- PATIENT 4 --}}
-        <div class="p-card">
-            <div class="p-header">
-                <div class="p-avatar">KE</div>
-                <div>
-                    <div class="p-name">KOUASSI Eliane</div>
-                    <div class="p-id">#PT-2026-002</div>
-                </div>
-            </div>
-            <div class="p-body">
-                <div class="p-stat">Sexe / Âge : <strong>Femme, 34 ans</strong></div>
-                <div class="p-stat">Dernière Visite : <strong>Aujourd'hui</strong></div>
-                <div class="p-stat">Alerte Méd. : <strong style="color:#64748b;">Aucune</strong></div>
-            </div>
-            <div class="p-actions">
-                <a href="{{ route('medecin.consultation', ['name' => 'KOUASSI Eliane', 'motif' => 'Analyse des nouveaux symptômes']) }}" class="btn-dossier">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Dossier médical
-                </a>
-                <a href="{{ route('medecin.ordonnances', ['patient' => 'KOUASSI Eliane']) }}" class="btn-ord">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                    Ordonnance
-                </a>
-            </div>
-        </div>
-
-        {{-- PATIENT 5 --}}
-        <div class="p-card">
-            <div class="p-header">
-                <div class="p-avatar">BT</div>
-                <div>
-                    <div class="p-name">BIO Tchané</div>
-                    <div class="p-id">#PT-2023-998</div>
-                </div>
-            </div>
-            <div class="p-body">
-                <div class="p-stat">Sexe / Âge : <strong>Homme, 60 ans</strong></div>
-                <div class="p-stat">Dernière Visite : <strong>Hier</strong></div>
-                <div class="p-stat alert">Alerte Méd. : <strong>Hypertension</strong></div>
-            </div>
-            <div class="p-actions">
-                <a href="{{ route('medecin.consultation', ['name' => 'BIO Tchané', 'motif' => 'Suivi post-opératoire']) }}" class="btn-dossier">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Dossier médical
-                </a>
-                <a href="{{ route('medecin.ordonnances', ['patient' => 'BIO Tchané']) }}" class="btn-ord">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                    Ordonnance
-                </a>
-            </div>
-        </div>
-
-        {{-- PATIENT 6 --}}
-        <div class="p-card">
-            <div class="p-header">
-                <div class="p-avatar">DC</div>
-                <div>
-                    <div class="p-name">DOSSA Clémence</div>
-                    <div class="p-id">#PT-2026-112</div>
-                </div>
-            </div>
-            <div class="p-body">
-                <div class="p-stat">Sexe / Âge : <strong>Femme, 19 ans</strong></div>
-                <div class="p-stat">Dernière Visite : <strong>Il y a 2 jours</strong></div>
-                <div class="p-stat">Alerte Méd. : <strong style="color:#64748b;">Aucune</strong></div>
-            </div>
-            <div class="p-actions">
-                <a href="{{ route('medecin.consultation', ['name' => 'DOSSA Clémence', 'motif' => 'Bilan de santé']) }}" class="btn-dossier">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Dossier médical
-                </a>
-                <a href="{{ route('medecin.ordonnances', ['patient' => 'DOSSA Clémence']) }}" class="btn-ord">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                    Ordonnance
-                </a>
-            </div>
-        </div>
+        @endforelse
 
     </div>
 

@@ -44,12 +44,19 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
+        $request->validate([
+            'contact_urgence_nom' => ['nullable', 'string', 'different:name'],
+            'contact_urgence_tel' => ['nullable', 'string', 'different:telephone'],
+        ], [
+            'contact_urgence_nom.different' => 'Le nom du contact d\'urgence doit être différent de votre propre nom.',
+            'contact_urgence_tel.different' => 'Le téléphone d\'urgence doit être différent de votre propre numéro.',
+        ]);
+
         // Mise à jour des informations de base (User)
         $user->name = $request->input('name', $user->name);
         $user->email = $request->input('email', $user->email);
         $user->telephone = $request->input('telephone', $user->telephone);
-        // Si le birth_date existe dans la table users (souvent oui dans les apps médicales)
-        // $user->birth_date = $request->input('birth_date', $user->birth_date);
+        $user->birth_date = $request->input('birth_date', $user->birth_date);
         $user->save();
 
         // Mise à jour ou création du profil Patient

@@ -59,6 +59,19 @@
             background: var(--nav-accent); color: #fff;
             display: flex; align-items: center; justify-content: center;
             font-size: 12px; font-weight: 700; flex-shrink: 0;
+            position: relative;
+        }
+        .status-indicator {
+            position: absolute; bottom: 0; right: 0;
+            width: 10px; height: 10px; background: #22c55e;
+            border-radius: 50%; border: 2px solid var(--nav-bg);
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+            animation: statusPulse 2s infinite;
+        }
+        @keyframes statusPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
         .user-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
         .user-role { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 1px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -109,7 +122,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 Mes Patients
-                <span class="nav-badge">3</span>
+                @php
+                    $count = \App\Models\RendezVous::where('medecin_id', Auth::user()->medecin->id ?? 0)
+                        ->whereIn('statut', ['confirme', 'reporte', 'termine'])
+                        ->distinct('patient_id')
+                        ->count();
+                @endphp
+                @if($count > 0)
+                    <span class="nav-badge">{{ $count }}</span>
+                @endif
             </a>
 
             <div class="nav-section">Gestion</div>
@@ -152,9 +173,12 @@
                 $nameParts = explode(' ', Auth::user()->name ?? 'Medecin Doe');
                 $initials  = strtoupper(substr($nameParts[0], 0, 1) . substr($nameParts[1] ?? '', 0, 1));
             @endphp
-            <div class="user-avatar">{{ $initials }}</div>
+            <div class="user-avatar">
+                {{ $initials }}
+                <div class="status-indicator"></div>
+            </div>
             <div>
-                <div class="user-name">Dr. {{ Auth::user()->name ?? 'Médecin' }}</div>
+                <div class="user-name">{{ str_starts_with(Auth::user()->name, 'Dr') ? Auth::user()->name : 'Dr. ' . Auth::user()->name }}</div>
                 <div class="user-role">Spécialiste</div>
             </div>
         </div>

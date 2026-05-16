@@ -52,7 +52,7 @@
 
     /* ── STATS FLOTTANTES ── */
     .stats-float {
-        display:grid; grid-template-columns:repeat(4, minmax(0,1fr));
+        display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
         gap:12px; margin-top:-44px; position:relative; z-index:10;
         padding:0 2px; margin-bottom:24px;
     }
@@ -226,7 +226,6 @@
         <div class="hero-deco2"></div>
         <div class="hero-deco3"></div>
         <div class="hero-content">
-           
             <h1 class="hero-title">
                 Votre santé,<br>
                 <span>notre priorité absolue.</span>
@@ -261,6 +260,19 @@
 
     {{-- ══ STATS FLOTTANTES ══ --}}
     <div class="stats-float">
+        <div class="sf">
+            <div class="sf-icon" style="background:#faf5ff">
+                <svg width="16" height="16" fill="none" stroke="#9333ea" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+            </div>
+            <div class="sf-label">Âge</div>
+            <div class="sf-val">{{ Auth::user()->birth_date ? \Carbon\Carbon::parse(Auth::user()->birth_date)->age : '--' }} <small>ans</small></div>
+            <span class="sf-pill p-slate">
+                {{ Auth::user()->birth_date ? 'Calculé' : 'Non renseigné' }}
+            </span>
+        </div>
         <div class="sf">
             <div class="sf-icon" style="background:#eff6ff">
                 <svg width="16" height="16" fill="none" stroke="#1d4ed8" viewBox="0 0 24 24">

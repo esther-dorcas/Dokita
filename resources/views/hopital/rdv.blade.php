@@ -174,11 +174,47 @@
 
 </div>
 
-{{-- Formulaire invisible pour la modification --}}
-<form id="form-reprogrammer" method="POST" style="display:none;">
-    @csrf
-    <input type="hidden" name="date_heure" id="input-date-heure">
-</form>
+{{-- MODAL REPROGRAMMER --}}
+<div id="modal-reprogrammer" style="display:none; position:fixed; inset:0; background:rgba(12,35,64,.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:var(--radius-xl); padding:30px; width:100%; max-width:400px; box-shadow:0 20px 40px rgba(0,0,0,.15); animation:slideUp .3s ease-out;">
+        <h3 style="margin-top:0; color:#0f172a; font-size:18px; font-weight:800; margin-bottom:10px;">Reprogrammer le rendez-vous</h3>
+        <p style="font-size:13px; color:#64748b; margin-bottom:20px;">Veuillez choisir la nouvelle date et heure pour ce rendez-vous.</p>
+        
+        <form id="form-reprogrammer" method="POST">
+            @csrf
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:11px; font-weight:800; color:#475569; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px;">Nouvelle Date & Heure</label>
+                <input type="datetime-local" name="date_heure" id="modal-date-heure" required style="width:100%; padding:12px 14px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; font-size:14px; font-weight:600; color:#0f172a; outline:none; transition:.2s;" onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" onclick="closeModal()" style="padding:10px 18px; border-radius:10px; font-size:13px; font-weight:700; background:#f1f5f9; color:#475569; border:none; cursor:pointer; transition:.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Annuler</button>
+                <button type="submit" style="padding:10px 18px; border-radius:10px; font-size:13px; font-weight:700; background:var(--blue); color:#fff; border:none; cursor:pointer; transition:.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='var(--blue)'">Confirmer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- MODAL ANNULER --}}
+<div id="modal-annuler" style="display:none; position:fixed; inset:0; background:rgba(12,35,64,.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:var(--radius-xl); padding:30px; width:100%; max-width:400px; box-shadow:0 20px 40px rgba(0,0,0,.15); animation:slideUp .3s ease-out; text-align:center;">
+        <div style="width:50px; height:50px; border-radius:50%; background:#fef2f2; color:#dc2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h3 style="margin-top:0; color:#0f172a; font-size:18px; font-weight:800; margin-bottom:10px;">Annuler le rendez-vous ?</h3>
+        <p style="font-size:13px; color:#64748b; margin-bottom:24px;">Êtes-vous absolument sûr de vouloir annuler ce rendez-vous ? Cette action est irréversible et le patient sera notifié.</p>
+        
+        <form id="form-annuler" method="POST">
+            @csrf
+            <input type="hidden" name="statut" value="annule">
+            
+            <div style="display:flex; justify-content:center; gap:10px;">
+                <button type="button" onclick="closeModal()" style="padding:10px 18px; border-radius:10px; font-size:13px; font-weight:700; background:#f1f5f9; color:#475569; border:none; cursor:pointer; transition:.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Garder le RDV</button>
+                <button type="submit" style="padding:10px 18px; border-radius:10px; font-size:13px; font-weight:700; background:#dc2626; color:#fff; border:none; cursor:pointer; transition:.2s;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">Oui, annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @if(session('success'))
 <script>
@@ -195,13 +231,27 @@
     }
 
     function reprogrammerRDV(id, currentDate) {
-        let newDate = prompt("Veuillez saisir la nouvelle date et heure (Format : AAAA-MM-JJ HH:MM)", currentDate.replace('T', ' '));
-        if (newDate) {
-            let form = document.getElementById('form-reprogrammer');
-            form.action = `/hopital/rdv/${id}/reprogrammer`;
-            document.getElementById('input-date-heure').value = newDate.replace(' ', 'T');
-            form.submit();
-        }
+        let form = document.getElementById('form-reprogrammer');
+        form.action = `/hopital/rdv/${id}/reprogrammer`;
+        
+        let dateInput = document.getElementById('modal-date-heure');
+        dateInput.value = currentDate.replace(' ', 'T').substring(0, 16);
+        
+        let modal = document.getElementById('modal-reprogrammer');
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal-reprogrammer').style.display = 'none';
+        document.getElementById('modal-annuler').style.display = 'none';
+    }
+
+    function annulerRDV(id) {
+        let form = document.getElementById('form-annuler');
+        form.action = `/hopital/rdv/${id}/statut`;
+        
+        let modal = document.getElementById('modal-annuler');
+        modal.style.display = 'flex';
     }
 </script>
 @endsection

@@ -29,7 +29,7 @@ class SendRdvReminders extends Command
 
         $rdvDemain = \App\Models\RendezVous::with(['patient', 'medecin.user', 'medecin.hopital'])
             ->whereDate('date_heure', $demain->toDateString())
-            ->where('statut', 'en_attente')
+            ->whereIn('statut', ['en_attente', 'confirme'])
             ->where('rappel_envoye', false)
             ->get();
 

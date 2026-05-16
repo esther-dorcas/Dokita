@@ -167,22 +167,22 @@
                     <div class="form-row">
                         <div class="field-group">
                             <label class="field-label">Nom Complet</label>
-                            <input type="text" name="name" value="{{ Auth::user()->name }}" class="field-input">
+                            <input type="text" name="name" value="{{ old('name', Auth::user()->name) }}" class="field-input">
                         </div>
                         <div class="field-group">
                             <label class="field-label">Adresse E-mail</label>
-                            <input type="email" name="email" value="{{ Auth::user()->email }}" class="field-input">
+                            <input type="email" name="email" value="{{ old('email', Auth::user()->email) }}" class="field-input">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="field-group mb-0">
                             <label class="field-label">Téléphone</label>
-                            <input type="tel" name="telephone" value="{{ Auth::user()->telephone }}" placeholder="+229 00 00 00 00" class="field-input" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
+                            <input type="tel" name="telephone" value="{{ old('telephone', Auth::user()->telephone) }}" placeholder="+229 00 00 00 00" class="field-input" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
                         </div>
                         <div class="field-group mb-0">
                             <label class="field-label">Date de Naissance</label>
-                            <input type="date" name="birth_date" value="{{ Auth::user()->birth_date }}" class="field-input">
+                            <input type="date" name="birth_date" value="{{ old('birth_date', Auth::user()->birth_date) }}" class="field-input">
                         </div>
                     </div>
 
@@ -194,11 +194,13 @@
                         <div class="form-row">
                             <div>
                                 <label class="field-label !text-red-800">Nom du contact</label>
-                                <input type="text" name="contact_urgence_nom" value="{{ $patient->contact_urgence_nom ?? '' }}" placeholder="Ex: Mère, Conjoint..." class="field-input">
+                                <input type="text" name="contact_urgence_nom" value="{{ old('contact_urgence_nom', $patient->contact_urgence_nom ?? '') }}" placeholder="Ex: Mère, Conjoint..." class="field-input">
+                                @error('contact_urgence_nom')<div style="color:#b91c1c; font-size:11px; margin-top:4px; font-weight:600;">{{ $message }}</div>@enderror
                             </div>
                             <div>
                                 <label class="field-label !text-red-800">Téléphone urgence</label>
-                                <input type="tel" name="contact_urgence_tel" value="{{ $patient->contact_urgence_tel ?? '' }}" placeholder="Ex: 0144597009" class="field-input" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
+                                <input type="tel" name="contact_urgence_tel" value="{{ old('contact_urgence_tel', $patient->contact_urgence_tel ?? '') }}" placeholder="Ex: 0144597009" class="field-input" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
+                                @error('contact_urgence_tel')<div style="color:#b91c1c; font-size:11px; margin-top:4px; font-weight:600;">{{ $message }}</div>@enderror
                             </div>
                         </div>
                     </div>
@@ -225,7 +227,13 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="grid grid-cols-3 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="vital-stat-mini">
+                                <div class="vital-label">Âge (ans)</div>
+                                <div class="field-input field-input-small mt-2 text-center !font-bold" style="background: transparent; border: none; font-size: 16px; color: #0f172a; cursor: default;">
+                                    {{ Auth::user()->birth_date ? \Carbon\Carbon::parse(Auth::user()->birth_date)->age : '--' }}
+                                </div>
+                            </div>
                             <div class="vital-stat-mini">
                                 <div class="vital-label">Taille (cm)</div>
                                 <input type="number" name="taille" value="{{ $patient->taille ?? '' }}" placeholder="Ex: 175" class="field-input field-input-small mt-2 text-center !font-bold">

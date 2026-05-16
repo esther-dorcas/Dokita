@@ -383,21 +383,12 @@
             {{-- ACTIONS --}}
             <div class="rdv-actions">
                 @if(!$isCancelled && !$isPast)
-                <form method="POST" action="{{ route('rdv.annuler', $rdv->id) }}"
-                      onsubmit="return confirm('Annuler ce rendez-vous ?')">
-                    @csrf
-                    <button type="submit" class="btn-act danger" title="Annuler">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </form>
-                @endif
-                <a href="{{ route('rdv.index') }}" class="btn-act" title="Détails">
+                <button type="button" class="btn-act danger" title="Annuler" onclick="ouvrirModalAnnulation({{ $rdv->id }})">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
-                </a>
+                </button>
+                @endif
             </div>
         </div>
 
@@ -418,8 +409,37 @@
     </div>
 </div>
 
+{{-- MODAL ANNULATION PATIENT --}}
+<div id="modal-annulation-patient" style="display:none; position:fixed; inset:0; background:rgba(12,35,64,.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:20px; padding:32px; width:100%; max-width:400px; box-shadow:0 20px 40px rgba(0,0,0,.15); text-align:center;">
+        <div style="width:52px; height:52px; border-radius:50%; background:#fef2f2; color:#dc2626; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h3 style="margin:0 0 8px; color:#0f172a; font-size:18px; font-weight:800;">Annuler le rendez-vous ?</h3>
+        <p style="font-size:13px; color:#64748b; margin-bottom:24px;">Cette action est irréversible. Le médecin et l'hôpital seront automatiquement informés par email.</p>
+
+        <form id="form-annulation-patient" method="POST">
+            @csrf
+            <div style="display:flex; justify-content:center; gap:10px;">
+                <button type="button" onclick="fermerModalAnnulation()" style="padding:10px 20px; border-radius:10px; font-size:13px; font-weight:700; background:#f1f5f9; color:#475569; border:none; cursor:pointer;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Garder le RDV</button>
+                <button type="submit" style="padding:10px 20px; border-radius:10px; font-size:13px; font-weight:700; background:#dc2626; color:#fff; border:none; cursor:pointer;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">Oui, annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+function ouvrirModalAnnulation(rdvId) {
+    let form = document.getElementById('form-annulation-patient');
+    form.action = `/mes-rdv/${rdvId}/annuler`;
+    document.getElementById('modal-annulation-patient').style.display = 'flex';
+}
+
+function fermerModalAnnulation() {
+    document.getElementById('modal-annulation-patient').style.display = 'none';
+}
+
 function filterRdv(filter, btn) {
     document.querySelectorAll('.rdv-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');

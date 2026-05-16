@@ -115,26 +115,67 @@ class HopitalDashboardController extends Controller
 
     public function updateRdvStatut(Request $request, $id)
     {
-        $rdv = RendezVous::with('patient')->findOrFail($id);
+        $rdv = RendezVous::with(['patient', 'medecin.user'])->findOrFail($id);
         $rdv->update(['statut' => $request->statut]);
         
+        // ==========================================
+        // NOTIFICATION PAR MAIL (PATIENT ET MÉDECIN)
+        // ==========================================
+        // Mail au Patient
         if ($rdv->patient && $rdv->patient->email) {
             Mail::to($rdv->patient->email)->send(new RdvStatusMail($rdv, $request->statut));
         }
+        
+        // Mail au Médecin
+        if ($rdv->medecin && $rdv->medecin->user && $rdv->medecin->user->email) {
+            Mail::to($rdv->medecin->user->email)->send(new RdvStatusMail($rdv, $request->statut, 'medecin'));
+        }
 
-        return back()->with('success', 'Le statut du rendez-vous a été mis à jour.');
+        // ==========================================
+        // NOTIFICATION PAR APPEL (SIMULATION)
+        // ==========================================
+        if ($request->statut === 'confirme') {
+            if ($rdv->patient && $rdv->patient->telephone) {
+                \Illuminate\Support\Facades\Log::info("📞 [SIMULATION APPEL VOCAL] -> Appelle le PATIENT ({$rdv->patient->telephone}). Message : 'Votre rendez-vous du {$rdv->date_heure->format('d/m/Y')} est confirmé.'");
+            }
+            if ($rdv->medecin && $rdv->medecin->user && $rdv->medecin->user->telephone) {
+                \Illuminate\Support\Facades\Log::info("📞 [SIMULATION APPEL VOCAL] -> Appelle le MÉDECIN ({$rdv->medecin->user->telephone}). Message : 'Nouveau rendez-vous confirmé avec {$rdv->patient->name} le {$rdv->date_heure->format('d/m/Y')}.'");
+            }
+        }
+
+        return back()->with('success', 'Le statut du rendez-vous a été mis à jour. Les notifications ont été envoyées.');
     }
 
     public function reprogrammerRdv(Request $request, $id)
     {
-        $rdv = RendezVous::with('patient')->findOrFail($id);
+        $rdv = RendezVous::with(['patient', 'medecin.user'])->findOrFail($id);
         $rdv->update(['date_heure' => $request->date_heure]);
 
+        // ==========================================
+        // 1. NOTIFICATION PAR MAIL
+        // ==========================================
+        // Mail au Patient
         if ($rdv->patient && $rdv->patient->email) {
             Mail::to($rdv->patient->email)->send(new RdvStatusMail($rdv, 'reprogramme'));
         }
+        // Mail au Médecin
+        if ($rdv->medecin && $rdv->medecin->user && $rdv->medecin->user->email) {
+            Mail::to($rdv->medecin->user->email)->send(new RdvStatusMail($rdv, 'reprogramme', 'medecin'));
+        }
 
-        return back()->with('success', 'Le rendez-vous a été reprogrammé avec succès.');
+        // ==========================================
+        // 2. NOTIFICATION PAR APPEL (SIMULATION)
+        // ==========================================
+        // Appel au Patient
+        if ($rdv->patient && $rdv->patient->telephone) {
+            \Illuminate\Support\Facades\Log::info("📞 [SIMULATION APPEL VOCAL - TWILIO] -> Appelle le PATIENT ({$rdv->patient->telephone}). Message vocal : 'Bonjour {$rdv->patient->name}, votre hôpital a reprogrammé votre rendez-vous au {$rdv->date_heure->format('d/m/Y à H:i')}.'");
+        }
+        // Appel au Médecin
+        if ($rdv->medecin && $rdv->medecin->user && $rdv->medecin->user->telephone) {
+            \Illuminate\Support\Facades\Log::info("📞 [SIMULATION APPEL VOCAL - TWILIO] -> Appelle le MÉDECIN ({$rdv->medecin->user->telephone}). Message vocal : 'Bonjour Dr. {$rdv->medecin->user->name}, votre consultation avec {$rdv->patient->name} a été déplacée au {$rdv->date_heure->format('d/m/Y à H:i')}.'");
+        }
+
+        return back()->with('success', 'Le rendez-vous a été reprogrammé. Le patient et le médecin ont été informés par Mail et Appel.');
     }
 
     public function medecins()

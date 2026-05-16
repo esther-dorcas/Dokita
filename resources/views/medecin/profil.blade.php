@@ -125,8 +125,8 @@
     </div>
 
     {{-- ══ PROFILE GRID ══ --}}
-    <form action="#" method="POST" onsubmit="event.preventDefault(); alert('Modifications enregistrées avec succès !');">
-        
+    <form action="{{ route('medecin.profil.update') }}" method="POST">
+        @csrf
         <div class="profile-grid">
             
             {{-- COLONNE GAUCHE : INFOS PERSONNELLES & PRO --}}
@@ -137,7 +137,7 @@
                     <div class="form-row">
                         <div class="field-group">
                             <label class="field-label">Nom Complet</label>
-                            <input type="text" value="Dr. {{ Auth::user()->name ?? 'Médecin' }}" class="field-input">
+                            <input type="text" name="name" value="{{ Auth::user()->name ?? 'Médecin' }}" class="field-input">
                         </div>
                         <div class="field-group">
                             <label class="field-label">Adresse E-mail</label>
@@ -148,7 +148,7 @@
                     <div class="form-row">
                         <div class="field-group mb-0">
                             <label class="field-label">Téléphone de contact</label>
-                            <input type="text" value="{{ Auth::user()->telephone ?? '+229 97 00 00 11' }}" class="field-input">
+                            <input type="text" name="telephone" value="{{ Auth::user()->telephone ?? '+229 97 00 00 11' }}" class="field-input">
                         </div>
                         <div class="field-group mb-0">
                             <label class="field-label">N° Ordre / N° d'inscription</label>
@@ -167,18 +167,18 @@
                         </div>
                         <div class="field-group">
                             <label class="field-label">Années d'expérience</label>
-                            <input type="number" value="12" class="field-input">
+                            <input type="number" name="experience" value="{{ Auth::user()->medecin->experience ?? 1 }}" class="field-input">
                         </div>
                     </div>
 
                     <div class="field-group">
                         <label class="field-label">Hôpital / Cabinet d'affiliation</label>
-                        <input type="text" value="{{ Auth::user()->hospital_affiliation ?? 'Non renseigné' }}" class="field-input" readonly>
+                        <input type="text" value="{{ Auth::user()->medecin->hopital->nom ?? 'Non renseigné' }}" class="field-input" readonly>
                     </div>
 
                     <div class="field-group mb-0">
                         <label class="field-label">Tarif Consultation Standard (FCFA)</label>
-                        <input type="number" value="15000" class="field-input" style="font-weight:800; color:var(--blue);">
+                        <input type="number" name="tarif" value="{{ Auth::user()->medecin->tarif ?? 10000 }}" class="field-input" style="font-weight:800; color:var(--blue);">
                     </div>
 
                     <div class="flex justify-end mt-8">
@@ -193,30 +193,23 @@
                 {{-- HORAIRES --}}
                 <div class="form-card">
                     <div class="section-title">Horaires de Consultation</div>
-                    <div class="schedule-row">
-                        <span class="schedule-day">Lundi</span>
-                        <span class="schedule-hours">08:00 - 17:00</span>
-                    </div>
-                    <div class="schedule-row">
-                        <span class="schedule-day">Mardi</span>
-                        <span class="schedule-hours">08:00 - 17:00</span>
-                    </div>
-                    <div class="schedule-row">
-                        <span class="schedule-day">Mercredi</span>
-                        <span class="schedule-hours">08:00 - 12:00</span>
-                    </div>
-                    <div class="schedule-row">
-                        <span class="schedule-day">Jeudi</span>
-                        <span class="schedule-hours">08:00 - 17:00</span>
-                    </div>
-                    <div class="schedule-row">
-                        <span class="schedule-day">Vendredi</span>
-                        <span class="schedule-hours">08:00 - 15:00</span>
-                    </div>
-                    <div class="schedule-row">
-                        <span class="schedule-day">Week-end</span>
-                        <span class="schedule-closed">Fermé</span>
-                    </div>
+                    @php
+                        $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+                        $dispos = Auth::user()->medecin->disponibilites ?? [];
+                    @endphp
+                    @foreach($jours as $jour)
+                        @php
+                            $horaire = $dispos[strtolower($jour)] ?? null;
+                        @endphp
+                        <div class="schedule-row">
+                            <span class="schedule-day">{{ $jour }}</span>
+                            @if($horaire && isset($horaire['debut']) && isset($horaire['fin']))
+                                <span class="schedule-hours">{{ $horaire['debut'] }} - {{ $horaire['fin'] }}</span>
+                            @else
+                                <span class="schedule-closed">Fermé</span>
+                            @endif
+                        </div>
+                    @endforeach
                     <a href="{{ route('medecin.settings') }}" class="btn-sec" style="margin-top:16px;">Modifier les horaires</a>
                 </div>
 

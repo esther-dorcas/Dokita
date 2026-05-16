@@ -31,31 +31,31 @@
     </td>
     <td>
         <div style="display: flex; gap: 8px;">
-            {{-- Confirmer --}}
-            @if($rdv->statut !== 'confirme')
-            <form action="{{ route('hopital.rdv.statut', $rdv->id) }}" method="POST">
-                @csrf
-                <input type="hidden" name="statut" value="confirme">
-                <button type="submit" class="btn-action" style="background: #f0fdf4; color: #16a34a;" title="Confirmer">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+            @if($rdv->date_heure && $rdv->date_heure->isFuture())
+                {{-- Confirmer --}}
+                @if($rdv->statut !== 'confirme')
+                <form action="{{ route('hopital.rdv.statut', $rdv->id) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="statut" value="confirme">
+                    <button type="submit" class="btn-action" style="background: #f0fdf4; color: #16a34a;" title="Confirmer">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                </form>
+                @endif
+
+                {{-- Reprogrammer --}}
+                <button type="button" class="btn-action" style="background: #eff6ff; color: #2563eb;" title="Modifier" onclick="reprogrammerRDV({{ $rdv->id }}, '{{ $rdv->date_heure ? $rdv->date_heure->format('Y-m-d\TH:i') : '' }}')">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 </button>
-            </form>
-            @endif
 
-            {{-- Reprogrammer --}}
-            <button type="button" class="btn-action" style="background: #eff6ff; color: #2563eb;" title="Modifier" onclick="reprogrammerRDV({{ $rdv->id }}, '{{ $rdv->date_heure ? $rdv->date_heure->format('Y-m-d\TH:i') : '' }}')">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-            </button>
-
-            {{-- Annuler --}}
-            @if($rdv->statut !== 'annule')
-            <form action="{{ route('hopital.rdv.statut', $rdv->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
-                @csrf
-                <input type="hidden" name="statut" value="annule">
-                <button type="submit" class="btn-action" style="background: #fef2f2; color: #dc2626;" title="Annuler">
+                {{-- Annuler --}}
+                @if($rdv->statut !== 'annule')
+                <button type="button" class="btn-action" style="background: #fef2f2; color: #dc2626;" title="Annuler" onclick="annulerRDV({{ $rdv->id }})">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
-            </form>
+                @endif
+            @else
+                <span style="font-size: 11px; font-weight: 700; color: #94a3b8; padding: 6px 0;">Terminé</span>
             @endif
         </div>
     </td>

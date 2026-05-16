@@ -13,11 +13,13 @@ class RdvStatusMail extends Mailable
 
     public $rdv;
     public $status;
+    public $recipientType;
 
-    public function __construct(RendezVous $rdv, $status)
+    public function __construct(RendezVous $rdv, $status, $recipientType = 'patient')
     {
         $this->rdv = $rdv;
         $this->status = $status;
+        $this->recipientType = $recipientType;
     }
 
     public function build()

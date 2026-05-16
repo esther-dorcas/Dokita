@@ -56,37 +56,28 @@
             <h2 class="section-title">Horaires de Consultation</h2>
             <p style="font-size:13px; color:#64748b; margin-bottom:20px;">Définissez les plages horaires de votre cabinet.</p>
 
-            <form action="#" method="POST" onsubmit="event.preventDefault(); alert('Horaires mis à jour avec succès !');">
-                <div class="schedule-item">
-                    <div class="sch-day">Lundi</div>
-                    <div class="sch-inputs">
-                        <input type="time" value="08:00"> <span class="sch-sep">à</span> <input type="time" value="17:00">
+            <form action="{{ route('medecin.settings.update') }}" method="POST">
+                @csrf
+                @php
+                    $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+                    $dispos = Auth::user()->medecin->disponibilites ?? [];
+                @endphp
+
+                @foreach($jours as $jour)
+                    @php
+                        $key = strtolower($jour);
+                        $debut = $dispos[$key]['debut'] ?? '';
+                        $fin = $dispos[$key]['fin'] ?? '';
+                    @endphp
+                    <div class="schedule-item">
+                        <div class="sch-day">{{ $jour }}</div>
+                        <div class="sch-inputs">
+                            <input type="time" name="dispo[{{ $key }}][debut]" value="{{ $debut }}"> 
+                            <span class="sch-sep">à</span> 
+                            <input type="time" name="dispo[{{ $key }}][fin]" value="{{ $fin }}">
+                        </div>
                     </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="sch-day">Mardi</div>
-                    <div class="sch-inputs">
-                        <input type="time" value="08:00"> <span class="sch-sep">à</span> <input type="time" value="17:00">
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="sch-day">Mercredi</div>
-                    <div class="sch-inputs">
-                        <input type="time" value="08:00"> <span class="sch-sep">à</span> <input type="time" value="12:00">
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="sch-day">Jeudi</div>
-                    <div class="sch-inputs">
-                        <input type="time" value="08:00"> <span class="sch-sep">à</span> <input type="time" value="17:00">
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="sch-day">Vendredi</div>
-                    <div class="sch-inputs">
-                        <input type="time" value="08:00"> <span class="sch-sep">à</span> <input type="time" value="15:00">
-                    </div>
-                </div>
+                @endforeach
 
                 <div style="margin-top: 24px; text-align:right;">
                     <button type="submit" class="btn-save">Enregistrer</button>

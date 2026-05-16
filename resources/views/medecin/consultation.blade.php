@@ -39,11 +39,22 @@
     .status-badge {
         background: #f0fdf4; color: #166534; padding: 6px 14px;
         border-radius: 20px; font-size: 12px; font-weight: 800;
-        border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 6px;
-        animation: pulse 2s infinite; white-space: nowrap;
+        border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 8px;
+        white-space: nowrap; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
     }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+    .status-dot { 
+        width: 8px; height: 8px; border-radius: 50%; background: #22c55e; 
+        position: relative;
+    }
+    .status-dot::after {
+        content: ''; position: absolute; inset: -4px;
+        border-radius: 50%; border: 2px solid #22c55e;
+        animation: ringPulse 1.5s infinite;
+    }
+    @keyframes ringPulse {
+        0% { transform: scale(0.5); opacity: 1; }
+        100% { transform: scale(2.5); opacity: 0; }
+    }
 
     /* ── GRID ── */
     .consult-grid { display: grid; grid-template-columns: 350px 1fr; gap: 24px; }
@@ -133,22 +144,52 @@
     {{-- HEADER PATIENT --}}
     <div class="consult-header">
         <div class="patient-info">
-            <div class="patient-avatar">{{ strtoupper(substr(request('name', 'SOGLO Jean-Paul'), 0, 2)) }}</div>
+            @php
+                $initials = collect(explode(' ', $patient->name))->map(fn($n) => strtoupper(substr($n, 0, 1)))->take(2)->join('');
+                $age = $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age . ' ans' : 'Âge inconnu';
+                $allergies = $patient->patient->allergies ?? 'Aucune';
+            @endphp
+            <div class="patient-avatar">{{ $initials }}</div>
             <div>
-                <div class="patient-name">{{ request('name', 'SOGLO Jean-Paul') }}</div>
+                <div class="patient-name">{{ $patient->name }}</div>
                 <div class="patient-meta">
-                    <span class="meta-item">Adulte</span>
+                    <span class="meta-item">{{ $age }}</span>
                     <span class="meta-dot"></span>
-                    <span class="meta-item">N° Dossier: #PT-2026-{{ rand(100, 999) }}</span>
+                    <span class="meta-item">N° Dossier: #PT-{{ $patient->id }}-{{ date('Y') }}</span>
                     <span class="meta-dot"></span>
-                    <span class="meta-item" style="color:#ef4444; font-weight:800;">Allergie: Pénicilline</span>
+                    <span class="meta-item" style="color:{{ $allergies !== 'Aucune' ? '#ef4444' : '#64748b' }}; font-weight:800;">Allergie: {{ $allergies }}</span>
                 </div>
             </div>
         </div>
-        <div class="status-badge">
-            <div class="status-dot"></div>
-            Consultation en cours
-        </div>
+        @php
+            $nextRdv = Auth::user()->medecin->rendezVous()
+                ->where('patient_id', $patient->id)
+                ->whereIn('statut', ['confirme', 'reporte'])
+                ->where('date_heure', '>=', now()->startOfDay())
+                ->orderBy('date_heure', 'asc')
+                ->first();
+        @endphp
+
+        @if($nextRdv && $nextRdv->date_heure->isToday())
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                Consultation en cours
+            </div>
+        @elseif($nextRdv && $nextRdv->date_heure->isFuture())
+            <div class="status-badge" style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe; box-shadow: none;">
+                <div class="status-dot" style="background: #3b82f6;">
+                    <style>.status-dot::after { display: none !important; }</style>
+                </div>
+                Prochaine séance : {{ $nextRdv->date_heure->translatedFormat('d F') }} à {{ $nextRdv->date_heure->format('H:i') }}
+            </div>
+        @else
+            <div class="status-badge" style="background: #f1f5f9; color: #475569; border-color: #e2e8f0; box-shadow: none;">
+                <div class="status-dot" style="background: #94a3b8;">
+                    <style>.status-dot::after { display: none !important; }</style>
+                </div>
+                Dossier historique (Hors séance)
+            </div>
+        @endif
     </div>
 
     {{-- GRID --}}
@@ -165,24 +206,24 @@
                 <div class="vitals-grid">
                     <div class="vital-box">
                         <div class="vital-lbl">Groupe Sanguin</div>
-                        <div class="vital-val" style="color:#ef4444;">O+</div>
+                        <div class="vital-val" style="color:#ef4444;">{{ $patient->patient->groupe_sanguin ?? 'N/A' }}</div>
                     </div>
                     <div class="vital-box">
                         <div class="vital-lbl">Poids</div>
-                        <div class="vital-val">78 <span>kg</span></div>
+                        <div class="vital-val">{{ $patient->patient->poids ?? '--' }} <span>kg</span></div>
                     </div>
                     <div class="vital-box">
                         <div class="vital-lbl">Taille</div>
-                        <div class="vital-val">175 <span>cm</span></div>
+                        <div class="vital-val">{{ $patient->patient->taille ?? '--' }} <span>cm</span></div>
                     </div>
                     <div class="vital-box">
                         <div class="vital-lbl">Tension</div>
-                        <div class="vital-val">12/8</div>
+                        <div class="vital-val">{{ $patient->patient->tension ?? '--' }}</div>
                     </div>
                 </div>
                 <div class="vital-lbl" style="margin-bottom:8px;">Contact d'urgence (ICE)</div>
                 <div style="background:#fef2f2; color:#991b1b; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700;">
-                    SOGLO Marie (Épouse) : +229 97 45 XX XX
+                    {{ $patient->patient->contact_urgence_nom ?? 'Non renseigné' }} : {{ $patient->patient->contact_urgence_tel ?? '--' }}
                 </div>
             </div>
 
@@ -192,14 +233,21 @@
                     Historique Récent
                 </div>
                 <div class="history-list">
-                    <div class="history-item">
-                        <div class="history-date">12 Janvier 2026</div>
-                        <div class="history-text">Bilan sanguin annuel (Normal)</div>
-                    </div>
-                    <div class="history-item">
-                        <div class="history-date">05 Novembre 2025</div>
-                        <div class="history-text">Consultation pour grippe sévère</div>
-                    </div>
+                    @php
+                        $historique = \App\Models\RendezVous::where('patient_id', $patient->id)
+                            ->where('statut', 'termine')
+                            ->orderBy('date_heure', 'desc')
+                            ->take(3)
+                            ->get();
+                    @endphp
+                    @forelse($historique as $rdvHist)
+                        <div class="history-item">
+                            <div class="history-date">{{ $rdvHist->date_heure->translatedFormat('d F Y') }}</div>
+                            <div class="history-text">{{ $rdvHist->motif ?? 'Consultation médicale' }}</div>
+                        </div>
+                    @empty
+                        <p style="font-size:12px; color:#64748b; margin:0;">Aucun historique disponible.</p>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -222,7 +270,7 @@
                     <div class="field-label" style="color:#c2410c; margin-bottom:4px;">Prescription / Ordonnance</div>
                     <p style="font-size:12px; color:#92400e; margin:0;">Rédigez et imprimez l'ordonnance pour ce patient.</p>
                 </div>
-                <a href="{{ route('medecin.ordonnances', ['patient' => request('name')]) }}"
+                <a href="{{ route('medecin.ordonnances', ['patient_id' => $patient->id]) }}"
                    style="display:inline-flex; align-items:center; gap:8px; padding:11px 20px; background:#c2410c; color:#fff; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; transition:.2s; flex-shrink:0;"
                    onmouseover="this.style.background='#9a3412'" onmouseout="this.style.background='#c2410c'">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
@@ -233,7 +281,11 @@
             <div class="action-row">
                 <button class="btn btn-outline">Sauvegarder brouillon</button>
                 <button class="btn btn-primary" onclick="imprimerOrdonnance()">Imprimer Ordonnance</button>
-                <button class="btn btn-success" onclick="demanderTerminer()">Terminer la consultation</button>
+                @if($nextRdv && $nextRdv->date_heure->isToday())
+                    <button class="btn btn-success" onclick="demanderTerminer()">Terminer la consultation</button>
+                @else
+                    <button class="btn btn-success" style="background:#94a3b8; cursor:not-allowed;" title="Possible uniquement le jour du rendez-vous" disabled>Terminer la consultation</button>
+                @endif
             </div>
         </div>
 
@@ -279,12 +331,33 @@
         document.getElementById('modal-fin').classList.remove('open');
     }
     document.getElementById('btn-fin-ok').addEventListener('click', function () {
-        this.disabled = true;
-        this.textContent = 'Clôture en cours…';
-        afficherToast('Consultation clôturée', 'Le dossier a été sauvegardé avec succès.', 'success');
-        setTimeout(() => {
-            window.location.href = "{{ route('medecin.dashboard') }}";
-        }, 1200);
+        @if($nextRdv)
+            this.disabled = true;
+            this.textContent = 'Clôture en cours…';
+            
+            fetch("{{ route('medecin.consultation.cloturer', ['id' => $nextRdv->id]) }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    afficherToast('Consultation clôturée', 'Le dossier a été sauvegardé avec succès.', 'success');
+                    setTimeout(() => {
+                        window.location.href = "{{ route('medecin.dashboard') }}";
+                    }, 1200);
+                }
+            })
+            .catch(error => {
+                this.disabled = false;
+                this.textContent = 'Confirmer & Clôturer';
+                afficherToast('Erreur', 'Impossible de clôturer la consultation.', 'warning');
+            });
+        @endif
     });
 
     /* ── TOAST ── */

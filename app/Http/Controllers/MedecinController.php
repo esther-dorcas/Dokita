@@ -42,11 +42,23 @@ class MedecinController extends Controller
             ->orderBy('date_heure')
             ->get();
 
+        $latestUrgence = Urgence::where('statut', 'en_cours')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $recentActivity = RendezVous::where('medecin_id', $medecin->id)
+            ->whereIn('statut', ['termine', 'annule'])
+            ->orderBy('updated_at', 'desc')
+            ->take(5)
+            ->get();
+
         return view('medecin.dashboard', compact(
             'patientsPrevusCount',
             'consultesJourCount',
             'urgencesAssigneesCount',
-            'upcomingConsultations'
+            'upcomingConsultations',
+            'recentActivity',
+            'latestUrgence'
         ));
     }
 
@@ -111,15 +123,97 @@ class MedecinController extends Controller
         return view('medecin.profil');
     }
 
+    public function updateProfil(Request $request)
+    {
+        $user = Auth::user();
+        $medecin = $user->medecin;
+
+        $user->update([
+            'name' => $request->get('name'),
+            'telephone' => $request->get('telephone')
+        ]);
+
+        $medecin->update([
+            'experience' => $request->get('experience'),
+            'tarif' => $request->get('tarif'),
+            'bio' => $request->get('bio')
+        ]);
+
+        return back()->with('success', 'Profil mis à jour avec succès');
+    }
+
     public function consultation(Request $request)
     {
-        $name = $request->get('name');
+        $patientId = $request->get('patient_id');
         $motif = $request->get('motif');
-        return view('medecin.consultation', compact('name', 'motif'));
+        
+        // On récupère l'utilisateur patient et ses infos médicales
+        $patientUser = \App\Models\User::with('patient')->find($patientId);
+        
+        if (!$patientUser) {
+            $name = $request->get('name', 'SOGLO Jean-Paul');
+            $patientUser = \App\Models\User::where('name', $name)->first() ?? \App\Models\User::first();
+        }
+
+        return view('medecin.consultation', [
+            'patient' => $patientUser,
+            'motif' => $motif
+        ]);
+    }
+
+    public function cloturerConsultation($id)
+    {
+        $rdv = RendezVous::where('id', $id)
+            ->where('medecin_id', Auth::user()->medecin->id)
+            ->firstOrFail();
+
+        $rdv->update(['statut' => 'termine']);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function annulerRdv(Request $request, $id)
+    {
+        $rdv = RendezVous::where('id', $id)
+            ->where('medecin_id', Auth::user()->medecin->id)
+            ->firstOrFail();
+
+        $rdv->update([
+            'statut' => 'annule',
+            'motif_annulation' => $request->get('motif')
+        ]);
+
+        return back()->with('success', 'Rendez-vous annulé avec succès.');
+    }
+
+    public function ordonnances(Request $request)
+    {
+        $patientId = $request->get('patient_id');
+        $patient = null;
+        
+        if ($patientId) {
+            $patient = \App\Models\User::find($patientId);
+        } elseif ($request->has('patient')) {
+            $patient = \App\Models\User::where('name', $request->get('patient'))->first();
+        }
+
+        return view('medecin.ordonnance', compact('patient'));
     }
 
     public function settings()
     {
         return view('medecin.settings');
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $medecin = Auth::user()->medecin;
+        if (!$medecin) return back()->with('error', 'Profil médecin non trouvé');
+
+        $medecin->update([
+            'disponibilites' => $request->get('dispo')
+        ]);
+
+        return back()->with('success', 'Paramètres mis à jour avec succès');
     }
 }

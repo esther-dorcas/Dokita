@@ -26,9 +26,9 @@
             width: 50%;
             background-color: #0f172a;
             background-image: linear-gradient(160deg, rgba(10,30,60,0.93) 0%, rgba(8,145,178,0.85) 100%),
-                              url('/images/medunis.jpg');
+                              url('/images/noi1.jpg');
             background-position: center;
-            background-size: cover;
+            background-size: 100%;
             background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
@@ -175,5 +175,7 @@
         </div>
     </div>
 
+    @include('partials.footer')
+    @include('partials.samu-modal')
 </body>
 </html>

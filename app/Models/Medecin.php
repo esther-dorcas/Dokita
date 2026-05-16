@@ -6,7 +6,7 @@ class Medecin extends Model
 {
     protected $fillable = [
         'user_id','hopital_id','specialite_id',
-        'specialite','bio','disponibilites','statut'
+        'specialite','experience','tarif','bio','disponibilites','statut'
     ];
 
     protected $casts = ['disponibilites' => 'array'];

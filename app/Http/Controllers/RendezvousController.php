@@ -83,6 +83,12 @@ class RendezvousController extends Controller
             Mail::to($patient->email)->send(new RdvConfirmationMail($rdv->load(['medecin.user', 'medecin.hopital'])));
         }
 
+        // --- NOTIFICATION À L'HÔPITAL ---
+        $hopitalUser = $medecin->hopital->user;
+        if ($hopitalUser && $hopitalUser->email) {
+            Mail::to($hopitalUser->email)->send(new \App\Mail\NewRdvRequestMail($rdv));
+        }
+
         return back()->with('success', 'Votre rendez-vous a bien été pris en compte. Un email de confirmation vous a été envoyé.');
     }
 

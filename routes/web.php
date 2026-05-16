@@ -96,9 +96,13 @@ Route::middleware(['auth', 'role:medecin'])->prefix('medecin')->name('medecin.')
     Route::get('/rdv',          [MedecinController::class, 'rdv'])->name('rdv');
     Route::get('/planning',     [MedecinController::class, 'planning'])->name('planning');
     Route::get('/profil',       [MedecinController::class, 'profil'])->name('profil');
+    Route::post('/profil',      [MedecinController::class, 'updateProfil'])->name('profil.update');
     Route::get('/consultation', [MedecinController::class, 'consultation'])->name('consultation');
-    Route::get('/ordonnances',  fn() => view('medecin.ordonnance'))->name('ordonnances');
+    Route::post('/consultation/{id}/cloturer', [MedecinController::class, 'cloturerConsultation'])->name('consultation.cloturer');
+    Route::post('/rdv/{id}/annuler', [MedecinController::class, 'annulerRdv'])->name('rdv.annuler');
+    Route::get('/ordonnances',  [MedecinController::class, 'ordonnances'])->name('ordonnances');
     Route::get('/parametres',   [MedecinController::class, 'settings'])->name('settings');
+    Route::post('/parametres',  [MedecinController::class, 'updateSettings'])->name('settings.update');
 });
 
 // ─── API Routes Patient ────────────────────────────────────────────────────────

@@ -145,8 +145,8 @@
 
 @section('content')
 <div class="animate-in" x-data="{
-    patient: '{{ request('patient') }}',
-    age: '',
+    patient: '{{ $patient->name ?? request('patient') }}',
+    age: '{{ $patient && $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age . ' ans' : '' }}',
     date: '{{ date('Y-m-d') }}',
     diagnostic: '',
     notes: '',

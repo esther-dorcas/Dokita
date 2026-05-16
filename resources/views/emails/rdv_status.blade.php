@@ -34,15 +34,31 @@
     </div>
     
     <div class="content">
-        <div class="greeting">Bonjour {{ $rdv->patient->name ?? 'Patient' }},</div>
+        <div class="greeting">
+            @if($recipientType === 'medecin')
+                Bonjour Dr. {{ $rdv->medecin->user->name ?? 'Docteur' }},
+            @else
+                Bonjour {{ $rdv->patient->name ?? 'Patient' }},
+            @endif
+        </div>
         
         <div class="message">
-            @if($status === 'confirme')
-                Nous avons le plaisir de vous informer que votre rendez-vous médical a été <strong>confirmé</strong> par l'établissement.
-            @elseif($status === 'annule')
-                Nous vous informons que votre rendez-vous médical a dû être <strong>annulé</strong> par l'établissement. Veuillez nous excuser pour ce désagrément.
-            @elseif($status === 'reprogramme')
-                Votre établissement a <strong>reprogrammé</strong> votre rendez-vous médical. Veuillez prendre note de la nouvelle date ci-dessous.
+            @if($recipientType === 'medecin')
+                @if($status === 'confirme')
+                    Le rendez-vous avec le patient <strong>{{ $rdv->patient->name ?? 'inconnu' }}</strong> a été <strong>confirmé</strong> par l'établissement.
+                @elseif($status === 'annule')
+                    Le rendez-vous avec le patient <strong>{{ $rdv->patient->name ?? 'inconnu' }}</strong> a été <strong>annulé</strong>.
+                @elseif($status === 'reprogramme')
+                    L'établissement a <strong>reprogrammé</strong> votre consultation avec le patient <strong>{{ $rdv->patient->name ?? 'inconnu' }}</strong>. Veuillez prendre note de la nouvelle date ci-dessous.
+                @endif
+            @else
+                @if($status === 'confirme')
+                    Nous avons le plaisir de vous informer que votre rendez-vous médical a été <strong>confirmé</strong> par l'établissement.
+                @elseif($status === 'annule')
+                    Nous vous informons que votre rendez-vous médical a dû être <strong>annulé</strong> par l'établissement. Veuillez nous excuser pour ce désagrément.
+                @elseif($status === 'reprogramme')
+                    Votre établissement a <strong>reprogrammé</strong> votre rendez-vous médical. Veuillez prendre note de la nouvelle date ci-dessous.
+                @endif
             @endif
         </div>
         
