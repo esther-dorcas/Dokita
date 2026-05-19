@@ -71,15 +71,17 @@
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     Informations du Centre
                 </div>
-                <form onsubmit="event.preventDefault(); alert('Modifications enregistrées avec succès dans la base de données !');">
+                <form method="POST" action="{{ route('hopital.parametres.update') }}">
+                    @csrf
+                    @method('PATCH')
                     <div class="form-grid">
                         <div>
                             <label class="field-label">Nom de l'établissement</label>
-                            <input type="text" class="field-input" value="{{ Auth::user()->name ?? 'Clinique Boni' }}" required>
+                            <input type="text" name="nom" class="field-input" value="{{ $hopital->nom ?? Auth::user()->name }}" required>
                         </div>
                         <div>
                             <label class="field-label">Type d'établissement</label>
-                            <select class="field-input">
+                            <select class="field-input" disabled style="opacity: 0.7;">
                                 <option value="clinique">Clinique Privée</option>
                                 <option value="hopital" selected>Hôpital Public</option>
                                 <option value="centre">Centre de santé communautaire</option>
@@ -89,16 +91,41 @@
                     <div class="form-grid">
                         <div>
                             <label class="field-label">Téléphone principal</label>
-                            <input type="tel" class="field-input" value="{{ Auth::user()->telephone ?? '21000000' }}" required>
+                            <input type="tel" name="telephone" class="field-input" value="{{ $hopital->telephone ?? Auth::user()->telephone }}" required>
                         </div>
                         <div>
                             <label class="field-label">Email de contact</label>
-                            <input type="email" class="field-input" value="{{ Auth::user()->email ?? 'contact@hopital.com' }}" required>
+                            <input type="email" class="field-input" value="{{ Auth::user()->email }}" disabled style="opacity: 0.7;">
                         </div>
                     </div>
-                    <div>
-                        <label class="field-label">Adresse Physique</label>
-                        <input type="text" class="field-input" value="Lot 45, Quartier Jacquot, Cotonou" style="margin-bottom: 20px;">
+                    <div class="form-grid">
+                        <div>
+                            <label class="field-label">Adresse Physique</label>
+                            <input type="text" name="adresse" class="field-input" value="{{ $hopital->adresse ?? '' }}" style="margin-bottom: 20px;">
+                        </div>
+                        <div>
+                            <label class="field-label">Capacité en Lits (Total disponibles)</label>
+                            <input type="number" name="capacite_lits" class="field-input" value="{{ $hopital->capacite_lits ?? '' }}" min="0" style="margin-bottom: 20px;" placeholder="Ex: 50">
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div>
+                            <label class="field-label">Latitude GPS</label>
+                            <input type="text" id="lat-input" name="latitude" class="field-input" value="{{ $hopital->latitude ?? '' }}" style="margin-bottom: 8px;" placeholder="Ex: 6.36536">
+                        </div>
+                        <div>
+                            <label class="field-label">Longitude GPS</label>
+                            <input type="text" id="lng-input" name="longitude" class="field-input" value="{{ $hopital->longitude ?? '' }}" style="margin-bottom: 8px;" placeholder="Ex: 2.41833">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <p style="font-size: 11px; color: #64748b; margin: 0; max-width: 60%;">
+                            <em>Astuce : Vous pouvez trouver ces coordonnées sur <a href="https://maps.google.com" target="_blank" style="color:var(--blue);">Google Maps</a> en faisant un clic droit sur votre clinique.</em>
+                        </p>
+                        <button type="button" id="btn-geoloc" onclick="obtenirGeolocalisation()" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
+                            <span id="btn-geoloc-text">Me localiser</span>
+                        </button>
                     </div>
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
                 </form>
@@ -166,6 +193,38 @@
     function activateNav(element) {
         document.querySelectorAll('.settings-nav-item').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
+    }
+
+    function obtenirGeolocalisation() {
+        const btnText = document.getElementById('btn-geoloc-text');
+        const btn = document.getElementById('btn-geoloc');
+        
+        btnText.innerText = "Recherche...";
+        btn.style.opacity = "0.7";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('lat-input').value = position.coords.latitude.toFixed(6);
+                document.getElementById('lng-input').value = position.coords.longitude.toFixed(6);
+                
+                btnText.innerText = "Localisé !";
+                btn.style.background = "#dcfce7";
+                btn.style.borderColor = "#22c55e";
+                btn.style.color = "#16a34a";
+                btn.style.opacity = "1";
+            }, function(error) {
+                alert("Impossible de récupérer la position. Veuillez autoriser la localisation.");
+                btnText.innerText = "Me localiser";
+                btn.style.opacity = "1";
+            }, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        } else {
+            alert("La géolocalisation n'est pas supportée par ce navigateur.");
+            btnText.innerText = "Me localiser";
+        }
     }
 </script>
 @endsection

@@ -36,6 +36,8 @@
     .status-dot.active { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.1); }
     .status-dot.busy { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.1); }
     .status-dot.absent { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,.1); }
+    .status-dot.pending { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(239,68,68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68, 0); } }
 </style>
 @endpush
 
@@ -62,9 +64,10 @@
                 
                 $medModel = $medecin->medecin;
                 $isAbsent = $medModel && $medModel->statut === 'inactif';
+                $isPending = $medModel && $medModel->statut === 'en_attente';
                 $inConsultation = false;
                 
-                if (!$isAbsent && $medModel && $medModel->rendezVous) {
+                if (!$isAbsent && !$isPending && $medModel && $medModel->rendezVous) {
                     $now = now();
                     $inConsultation = $medModel->rendezVous->contains(function ($rdv) use ($now) {
                         if ($rdv->statut !== 'confirme' || !$rdv->date_heure) return false;
@@ -74,7 +77,10 @@
                     });
                 }
 
-                if ($isAbsent) {
+                if ($isPending) {
+                    $statusClass = 'pending';
+                    $statusTitle = 'En attente de validation';
+                } elseif ($isAbsent) {
                     $statusClass = 'absent';
                     $statusTitle = 'Absent';
                 } elseif ($inConsultation) {

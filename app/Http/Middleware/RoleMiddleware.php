@@ -23,6 +23,16 @@ class RoleMiddleware
             abort(403, 'Accès non autorisé');
         }
 
+        // Vérification de l'approbation du médecin par l'hôpital
+        if (auth()->user()->role === 'medecin' && auth()->user()->medecin) {
+            $statut = auth()->user()->medecin->statut;
+            $currentRouteName = $request->route()->getName();
+            
+            if ($statut === 'en_attente' && $currentRouteName !== 'medecin.attente') {
+                return redirect()->route('medecin.attente');
+            }
+        }
+
         return $next($request);
     }
 }

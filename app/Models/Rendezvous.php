@@ -9,6 +9,7 @@ class RendezVous extends Model
     protected $fillable = [
         'patient_id','medecin_id','hopital_id','date_heure',
         'motif','statut','rappel_envoye',
+        'motif_annulation',
         'paiement_mode','paiement_statut','paiement_ref'
     ];
 

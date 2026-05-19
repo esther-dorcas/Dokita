@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hopital;
+use App\Models\Medecin;
 use App\Models\RendezVous;
 use App\Models\Urgence;
 use App\Models\User;
 use App\Mail\RdvStatusMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class HopitalDashboardController extends Controller
@@ -19,7 +22,10 @@ class HopitalDashboardController extends Controller
      */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
-        if (!$lat1 || !$lon1 || !$lat2 || !$lon2) return 0; // Si pas de GPS, on considère "proche" par défaut
+        // Si l'hôpital ou l'urgence n'a pas de GPS, on retourne une distance énorme
+        // pour ne pas spammer un nouvel hôpital avec toutes les urgences par défaut.
+        if (!$lat1 || !$lon1 || !$lat2 || !$lon2) return 9999; 
+        
         $earthRadius = 6371; // km
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
@@ -56,7 +62,9 @@ class HopitalDashboardController extends Controller
             $dist = $this->calculateDistance($hopital->latitude, $hopital->longitude, $u->latitude, $u->longitude);
             return $dist <= 15; // Rayon de 15km
         })->count();
-        $litsDisponibles = 18; // Placeholder as in view
+        
+        // Si la capacité de lits n'est pas renseignée, on affiche 0 ou "Non renseigné" (0 ici)
+        $litsDisponibles = $hopital->capacite_lits ?? 0;
 
         // Recent activity
         $recentDemandes = \App\Models\RendezVous::whereHas('medecin', fn($q) => $q->where('hopital_id', $hopital->id))
@@ -195,10 +203,70 @@ class HopitalDashboardController extends Controller
         return view('hopital.medecins-create');
     }
 
+    public function medecinsStore(Request $request)
+    {
+        $hopital = Auth::user()->hopital;
+
+        $request->validate([
+            'name'      => ['required', 'string', 'max:255'],
+            'email'     => ['required', 'email', 'unique:users,email'],
+            'telephone' => ['nullable', 'string', 'max:30'],
+            'specialite'=> ['required', 'string', 'max:100'],
+            'statut'    => ['nullable', 'string', 'in:actif,inactif'],
+        ]);
+
+        $tempPassword = Str::random(12);
+
+        $user = User::create([
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'telephone' => $request->telephone,
+            'role'      => 'medecin',
+            'password'  => Hash::make($tempPassword),
+        ]);
+
+        Medecin::create([
+            'user_id'    => $user->id,
+            'hopital_id' => $hopital->id,
+            'specialite' => $request->specialite,
+            'statut'     => $request->statut ?? 'actif',
+        ]);
+
+        return redirect()->route('hopital.medecins')
+            ->with('success', "Compte créé pour {$user->name}. Mot de passe temporaire : {$tempPassword}");
+    }
+
     public function medecinsEdit($id)
     {
         $medecinUser = User::where('role', 'medecin')->findOrFail($id);
         return view('hopital.medecins-edit', compact('medecinUser'));
+    }
+
+    public function medecinsUpdate(Request $request, $id)
+    {
+        $medecinUser = User::where('role', 'medecin')->findOrFail($id);
+
+        $request->validate([
+            'name'      => ['required', 'string', 'max:255'],
+            'telephone' => ['nullable', 'string', 'max:30'],
+            'specialite'=> ['required', 'string', 'max:100'],
+            'statut'    => ['nullable', 'string', 'in:actif,inactif'],
+        ]);
+
+        $medecinUser->update([
+            'name'      => $request->name,
+            'telephone' => $request->telephone,
+        ]);
+
+        if ($medecinUser->medecin) {
+            $medecinUser->medecin->update([
+                'specialite' => $request->specialite,
+                'statut'     => $request->statut ?? 'actif',
+            ]);
+        }
+
+        return redirect()->route('hopital.medecins')
+            ->with('success', 'Profil du médecin mis à jour avec succès.');
     }
 
     public function urgences()
@@ -217,7 +285,38 @@ class HopitalDashboardController extends Controller
 
     public function parametres()
     {
-        return view('hopital.parametres');
+        $hopital = Auth::user()->hopital;
+        return view('hopital.parametres', compact('hopital'));
+    }
+
+    public function updateParametres(Request $request)
+    {
+        $hopital = Auth::user()->hopital;
+        $user    = Auth::user();
+
+        $request->validate([
+            'nom'           => ['required', 'string', 'max:255'],
+            'telephone'     => ['nullable', 'string', 'max:30'],
+            'adresse'       => ['nullable', 'string', 'max:500'],
+            'capacite_lits' => ['nullable', 'integer', 'min:0'],
+            'latitude'      => ['nullable', 'numeric'],
+            'longitude'     => ['nullable', 'numeric'],
+        ]);
+
+        $hopital->update([
+            'nom'           => $request->nom,
+            'telephone'     => $request->telephone,
+            'adresse'       => $request->adresse,
+            'capacite_lits' => $request->capacite_lits,
+            'latitude'      => $request->latitude,
+            'longitude'     => $request->longitude,
+        ]);
+
+        // Sync le nom du compte User aussi
+        $user->update(['name' => $request->nom]);
+
+        return redirect()->route('hopital.parametres')
+            ->with('success', 'Paramètres enregistrés avec succès.');
     }
 
     public function countUrgences()

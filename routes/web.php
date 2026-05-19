@@ -78,20 +78,28 @@ Route::middleware(['auth', 'role:hopital'])->prefix('hopital')->name('hopital.')
     Route::post('/rdv/{id}/statut', [HopitalDashboardController::class, 'updateRdvStatut'])->name('rdv.statut');
     Route::post('/rdv/{id}/reprogrammer', [HopitalDashboardController::class, 'reprogrammerRdv'])->name('rdv.reprogrammer');
     
-    Route::get('/medecins',         [HopitalDashboardController::class, 'medecins'])->name('medecins');
-    Route::get('/medecins/ajouter', [HopitalDashboardController::class, 'medecinsCreate'])->name('medecins.create');
-    Route::get('/medecins/{id}/modifier', [HopitalDashboardController::class, 'medecinsEdit'])->name('medecins.edit');
-    
-    Route::get('/urgences',         [HopitalDashboardController::class, 'urgences'])->name('urgences');
-    Route::get('/parametres',       [HopitalDashboardController::class, 'parametres'])->name('parametres');
+    Route::get('/medecins',               [HopitalDashboardController::class, 'medecins'])->name('medecins');
+    Route::get('/medecins/ajouter',        [HopitalDashboardController::class, 'medecinsCreate'])->name('medecins.create');
+    Route::post('/medecins',               [HopitalDashboardController::class, 'medecinsStore'])->name('medecins.store');
+    Route::get('/medecins/{id}/modifier',  [HopitalDashboardController::class, 'medecinsEdit'])->name('medecins.edit');
+    Route::patch('/medecins/{id}',         [HopitalDashboardController::class, 'medecinsUpdate'])->name('medecins.update');
+
+    Route::get('/urgences',               [HopitalDashboardController::class, 'urgences'])->name('urgences');
+    Route::get('/parametres',             [HopitalDashboardController::class, 'parametres'])->name('parametres');
+    Route::patch('/parametres',           [HopitalDashboardController::class, 'updateParametres'])->name('parametres.update');
 
     // Polling API pour les alertes en temps réel
-    Route::get('/api/urgences/count', [HopitalDashboardController::class, 'countUrgences'])->name('api.urgences.count');
+    Route::get('/api/urgences/count',     [HopitalDashboardController::class, 'countUrgences'])->name('api.urgences.count');
     Route::post('/urgences/{id}/resolve', [HopitalDashboardController::class, 'resolveUrgence'])->name('urgences.resolve');
 });
 
 // ─── Routes Médecin ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:medecin'])->prefix('medecin')->name('medecin.')->group(function () {
+    Route::get('/attente', function() {
+        if(auth()->user()->medecin->statut === 'actif') return redirect()->route('medecin.dashboard');
+        return view('medecin.attente');
+    })->name('attente');
+
     Route::get('/dashboard',    [MedecinController::class, 'dashboard'])->name('dashboard');
     Route::get('/rdv',          [MedecinController::class, 'rdv'])->name('rdv');
     Route::get('/planning',     [MedecinController::class, 'planning'])->name('planning');

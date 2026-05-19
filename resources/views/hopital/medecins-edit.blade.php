@@ -35,16 +35,18 @@
     </div>
 
     <div class="form-card">
-        <form onsubmit="event.preventDefault(); alert('Le profil du médecin a été mis à jour avec succès et une notification lui a été envoyée !'); window.location.href='{{ route('hopital.medecins') }}';">
+        <form method="POST" action="{{ route('hopital.medecins.update', $medecinUser->id) }}">
+            @csrf
+            @method('PATCH')
             
             <div class="form-grid">
                 <div>
                     <label class="field-label">Nom Complet</label>
-                    <input type="text" class="field-input" value="{{ $medecinUser->name }}" required>
+                    <input type="text" name="name" class="field-input" value="{{ $medecinUser->name }}" required>
                 </div>
                 <div>
                     <label class="field-label">Spécialité</label>
-                    <select class="field-select" required>
+                    <select name="specialite" class="field-select" required>
                         <option value="Médecine Générale" {{ ($medecinUser->medecin->specialite ?? '') == 'Médecine Générale' ? 'selected' : '' }}>Médecine Générale</option>
                         <option value="Cardiologie" {{ ($medecinUser->medecin->specialite ?? '') == 'Cardiologie' ? 'selected' : '' }}>Cardiologie</option>
                         <option value="Pédiatrie" {{ ($medecinUser->medecin->specialite ?? '') == 'Pédiatrie' ? 'selected' : '' }}>Pédiatrie</option>
@@ -57,23 +59,24 @@
             <div class="form-grid">
                 <div>
                     <label class="field-label">Adresse Email Professionnelle</label>
-                    <input type="email" class="field-input" value="{{ $medecinUser->email }}" required>
+                    <input type="email" class="field-input" value="{{ $medecinUser->email }}" disabled style="opacity: 0.7;">
                 </div>
                 <div>
                     <label class="field-label">Numéro de Téléphone</label>
-                    <input type="tel" class="field-input" value="{{ $medecinUser->telephone ?? '' }}" required>
+                    <input type="tel" name="telephone" class="field-input" value="{{ $medecinUser->telephone ?? '' }}" required>
                 </div>
             </div>
 
             <div class="form-grid">
                 <div>
                     <label class="field-label">Numéro d'ordre (Licence)</label>
-                    <input type="text" class="field-input" value="MED-{{ date('Y') }}-{{ Str::upper(Str::random(3)) }}" required>
+                    <input type="text" class="field-input" value="MED-{{ date('Y') }}-{{ Str::upper(Str::random(3)) }}" disabled style="opacity: 0.7;">
                 </div>
                 <div>
                     <label class="field-label">Statut</label>
-                    <select class="field-select">
-                        <option value="actif" {{ ($medecinUser->medecin->statut ?? '') == 'actif' ? 'selected' : '' }}>Actif (De garde)</option>
+                    <select name="statut" class="field-select">
+                        <option value="en_attente" {{ ($medecinUser->medecin->statut ?? '') == 'en_attente' ? 'selected' : '' }}>En attente d'approbation</option>
+                        <option value="actif" {{ ($medecinUser->medecin->statut ?? '') == 'actif' ? 'selected' : '' }}>Actif (Approuvé / De garde)</option>
                         <option value="inactif" {{ ($medecinUser->medecin->statut ?? '') == 'inactif' ? 'selected' : '' }}>Absent / Inactif</option>
                     </select>
                 </div>

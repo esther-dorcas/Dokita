@@ -134,7 +134,7 @@
                         @if($rdv->statut === 'termine')
                             <span class="rdv-action" style="background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; pointer-events:none;">Terminée</span>
                         @else
-                            <a href="{{ route('medecin.consultation', ['patient_id' => $rdv->patient->id ?? '', 'motif' => $rdv->motif ?? '']) }}" 
+                            <a href="{{ route('medecin.consultation', ['rdv_id' => $rdv->id]) }}" 
                                class="rdv-action" 
                                style="{{ $rdv->date_heure && $rdv->date_heure->isToday() ? 'background:#2563eb; color:#fff; border-color:#2563eb;' : '' }}">
                                 {{ $rdv->date_heure && $rdv->date_heure->isToday() && $rdv->date_heure->isPast() ? 'Débuter' : 'Préparer' }}

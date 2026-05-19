@@ -106,7 +106,16 @@
             <a href="{{ route('hopital.rdv') }}" class="nav-item {{ request()->routeIs('hopital.rdv') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 Rendez-vous
-                <span class="nav-badge">12</span>
+                @php
+                    $hopital = Auth::user()->hopital;
+                    $pendingRdvCount = 0;
+                    if ($hopital) {
+                        $pendingRdvCount = \App\Models\RendezVous::where('hopital_id', $hopital->id)->where('statut', 'en_attente')->count();
+                    }
+                @endphp
+                @if($pendingRdvCount > 0)
+                    <span class="nav-badge">{{ $pendingRdvCount }}</span>
+                @endif
             </a>
 
             <div class="nav-section">Administration</div>
@@ -140,6 +149,21 @@
             @yield('content')
         </div>
     </main>
+    {{-- OVERLAY D'ALERTE ROUGE --}}
+    <div id="urgence-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(220, 38, 38, 0.95); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: white; backdrop-filter: blur(10px);">
+        <style>
+            @keyframes extremePulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); color: #fca5a5; } 100% { transform: scale(1); } }
+            @keyframes bgFlash { 0% { background: rgba(220, 38, 38, 0.95); } 50% { background: rgba(185, 28, 28, 0.98); } 100% { background: rgba(220, 38, 38, 0.95); } }
+            .flashing-bg { animation: bgFlash 1s infinite; }
+        </style>
+        <svg style="width: 120px; height: 120px; animation: extremePulse 1s infinite;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <h1 style="font-size: 5vw; font-weight: 900; margin: 20px 0 10px; text-transform: uppercase; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">Alerte Rouge</h1>
+        <p style="font-size: 2vw; font-weight: 600; margin-bottom: 40px; text-align: center;">Une nouvelle urgence vitale a été signalée dans votre secteur !</p>
+        <button onclick="allerAuxUrgences()" style="background: white; color: #dc2626; padding: 20px 50px; font-size: 24px; font-weight: 900; border: none; border-radius: 100px; cursor: pointer; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-transform: uppercase; transition: 0.2s;">
+            Intervenir immédiatement
+        </button>
+    </div>
+
 </div>
 
 @stack('scripts')
@@ -147,28 +171,79 @@
     // SYSTÈME D'ALERTE EN TEMPS RÉEL (Polling)
     let lastUrgenceCount = -1;
     
+    // --- GESTION DE L'ALARME SONORE (Web Audio API) ---
+    let audioCtx = null;
+    let alarmInterval = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playBeep() {
+        if (!audioCtx) return;
+        let oscillator = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+        
+        // Son d'urgence (alternance grave/aigu)
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
+        oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime + 0.2); 
+        
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); 
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.start();
+        setTimeout(() => { oscillator.stop(); }, 400); // Le bip dure 0.4s
+    }
+
+    function startAlarm() {
+        initAudio();
+        if(alarmInterval) return;
+        playBeep();
+        alarmInterval = setInterval(playBeep, 600); // Bip très rapproché
+    }
+
+    function stopAlarm() {
+        if(alarmInterval) {
+            clearInterval(alarmInterval);
+            alarmInterval = null;
+        }
+    }
+    // ---------------------------------------------------
+    
+    function allerAuxUrgences() {
+        stopAlarm();
+        if(window.location.pathname.indexOf('/urgences') === -1) {
+            window.location.href = '{{ route("hopital.urgences") }}';
+        } else {
+            window.location.reload();
+        }
+    }
+
+    // Autoriser l'audio au premier clic sur la page (règle des navigateurs)
+    document.body.addEventListener('click', initAudio, { once: true });
+
     // Vérifier toutes les 3 secondes
     setInterval(function() {
         fetch('{{ route("hopital.api.urgences.count") }}')
             .then(response => response.json())
             .then(count => {
                 if (lastUrgenceCount !== -1 && count > lastUrgenceCount) {
-                    // Jouer un son d'alerte (optionnel, certains navigateurs bloquent)
-                    try {
-                        let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                        audio.play();
-                    } catch(e) {}
-
-                    // Afficher la notification et rediriger
-                    alert("⚠️ ALERTE ROUGE : NOUVELLE URGENCE DÉTECTÉE !\n\nUn patient vient de déclencher une alerte de détresse.");
                     
-                    // Si on n'est pas déjà sur la page des urgences, on y va
-                    if(window.location.pathname.indexOf('/urgences') === -1) {
-                        window.location.href = '{{ route("hopital.urgences") }}';
-                    } else {
-                        // Sinon on recharge juste la page pour afficher la nouvelle urgence
-                        window.location.reload();
-                    }
+                    // Afficher le grand overlay rouge
+                    let overlay = document.getElementById('urgence-overlay');
+                    overlay.style.display = 'flex';
+                    overlay.classList.add('flashing-bg');
+
+                    // Lancer la vraie alarme sonore
+                    startAlarm();
                 }
                 lastUrgenceCount = count;
             })

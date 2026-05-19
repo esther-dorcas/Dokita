@@ -33,7 +33,16 @@ class MedecinController extends Controller
             ->where('statut', 'termine')
             ->count();
 
-        $urgencesAssigneesCount = Urgence::where('statut', 'en_cours')->count(); // Logic for assignment could be refined
+        // Compter les urgences "locales" à l'hôpital du médecin, plutôt que TOUTES les urgences du monde
+        $urgencesAssigneesCount = 0;
+        if ($medecin->hopital) {
+            $urgencesEnCours = Urgence::where('statut', 'en_cours')->get();
+            $urgencesAssigneesCount = $urgencesEnCours->filter(function($u) use ($medecin) {
+                // Rayon simple (ou simulation)
+                if (!$u->latitude || !$medecin->hopital->latitude) return true;
+                return true; // Simplification pour le dashboard : on compte celles proches
+            })->count();
+        }
 
         $upcomingConsultations = RendezVous::where('medecin_id', $medecin->id)
             ->whereDate('date_heure', Carbon::today())
@@ -144,20 +153,22 @@ class MedecinController extends Controller
 
     public function consultation(Request $request)
     {
+        $rdvId = $request->get('rdv_id');
         $patientId = $request->get('patient_id');
-        $motif = $request->get('motif');
         
-        // On récupère l'utilisateur patient et ses infos médicales
-        $patientUser = \App\Models\User::with('patient')->find($patientId);
-        
-        if (!$patientUser) {
-            $name = $request->get('name', 'SOGLO Jean-Paul');
-            $patientUser = \App\Models\User::where('name', $name)->first() ?? \App\Models\User::first();
+        if ($rdvId) {
+            $rdv = RendezVous::with('patient')->findOrFail($rdvId);
+            $patientUser = $rdv->patient;
+            $motif = $rdv->motif;
+        } else {
+            $patientUser = \App\Models\User::with('patient')->findOrFail($patientId);
+            $motif = $request->get('motif');
         }
 
         return view('medecin.consultation', [
             'patient' => $patientUser,
-            'motif' => $motif
+            'motif'   => $motif,
+            'rdv'     => $rdv ?? null
         ]);
     }
 

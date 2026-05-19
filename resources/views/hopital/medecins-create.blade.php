@@ -35,16 +35,17 @@
     </div>
 
     <div class="form-card">
-        <form onsubmit="event.preventDefault(); alert('Le médecin a été ajouté avec succès et un email d\'invitation lui a été envoyé !'); window.location.href='{{ route('hopital.medecins') }}';">
+        <form method="POST" action="{{ route('hopital.medecins.store') }}">
+            @csrf
             
             <div class="form-grid">
                 <div>
                     <label class="field-label">Nom Complet</label>
-                    <input type="text" class="field-input" placeholder="Ex: Dr. DOSSOU Alain" required>
+                    <input type="text" name="name" class="field-input" placeholder="Ex: Dr. DOSSOU Alain" required>
                 </div>
                 <div>
                     <label class="field-label">Spécialité</label>
-                    <select class="field-select" required>
+                    <select name="specialite" class="field-select" required>
                         <option value="">Sélectionnez...</option>
                         <option value="Médecine Générale">Médecine Générale</option>
                         <option value="Cardiologie">Cardiologie</option>
@@ -58,24 +59,24 @@
             <div class="form-grid">
                 <div>
                     <label class="field-label">Adresse Email Professionnelle</label>
-                    <input type="email" class="field-input" placeholder="medecin@hopital.com" required>
+                    <input type="email" name="email" class="field-input" placeholder="medecin@hopital.com" required>
                 </div>
                 <div>
                     <label class="field-label">Numéro de Téléphone</label>
-                    <input type="tel" class="field-input" placeholder="+229 XX XX XX XX" required>
+                    <input type="tel" name="telephone" class="field-input" placeholder="+229 XX XX XX XX" required>
                 </div>
             </div>
 
             <div class="form-grid">
                 <div>
                     <label class="field-label">Numéro d'ordre (Licence)</label>
-                    <input type="text" class="field-input" placeholder="Ex: MED-2026-XYZ" required>
+                    <input type="text" name="license_number" class="field-input" placeholder="Ex: MED-2026-XYZ">
                 </div>
                 <div>
                     <label class="field-label">Statut initial</label>
-                    <select class="field-select">
+                    <select name="statut" class="field-select">
                         <option value="actif">Actif (De garde)</option>
-                        <option value="repos">En repos</option>
+                        <option value="inactif">En repos</option>
                     </select>
                 </div>
             </div>

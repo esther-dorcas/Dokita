@@ -8,7 +8,7 @@ class Hopital extends Model
 
     protected $fillable = [
         'user_id','nom','adresse','latitude','longitude',
-        'telephone','whatsapp','horaires','description'
+        'telephone','whatsapp','horaires','description', 'capacite_lits'
     ];
     
     public function user()

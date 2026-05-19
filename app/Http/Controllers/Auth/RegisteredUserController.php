@@ -70,9 +70,10 @@ class RegisteredUserController extends Controller
         // Création des records associés selon le rôle
         if ($user->role === 'medecin') {
             \App\Models\Medecin::create([
-                'user_id' => $user->id,
+                'user_id'    => $user->id,
                 'hopital_id' => $request->hopital_id,
                 'specialite' => $request->specialty,
+                'statut'     => 'en_attente',
             ]);
         } elseif ($user->role === 'patient') {
             \App\Models\Patient::create([
