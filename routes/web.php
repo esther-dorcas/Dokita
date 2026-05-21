@@ -19,6 +19,13 @@ require __DIR__.'/auth.php';
 Route::post('/urgence/publique', [UrgenceController::class, 'storePublic'])->name('urgence.publique');
 
 // ─── Pages publiques ───────────────────────────────────────────────────────────
+Route::get('/conditions', function () {
+    return view('pages.conditions');
+})->name('conditions');
+
+Route::get('/politique-confidentialite', function () {
+    return view('pages.confidentialite');
+})->name('confidentialite');
 Route::get('/', function () {
     $hopitaux = Hopital::query()
         ->whereNotNull('latitude')
@@ -83,6 +90,7 @@ Route::middleware(['auth', 'role:hopital'])->prefix('hopital')->name('hopital.')
     Route::post('/medecins',               [HopitalDashboardController::class, 'medecinsStore'])->name('medecins.store');
     Route::get('/medecins/{id}/modifier',  [HopitalDashboardController::class, 'medecinsEdit'])->name('medecins.edit');
     Route::patch('/medecins/{id}',         [HopitalDashboardController::class, 'medecinsUpdate'])->name('medecins.update');
+    Route::delete('/medecins/{id}',        [HopitalDashboardController::class, 'medecinsDestroy'])->name('medecins.destroy');
 
     Route::get('/urgences',               [HopitalDashboardController::class, 'urgences'])->name('urgences');
     Route::get('/parametres',             [HopitalDashboardController::class, 'parametres'])->name('parametres');
@@ -111,6 +119,7 @@ Route::middleware(['auth', 'role:medecin'])->prefix('medecin')->name('medecin.')
     Route::get('/ordonnances',  [MedecinController::class, 'ordonnances'])->name('ordonnances');
     Route::get('/parametres',   [MedecinController::class, 'settings'])->name('settings');
     Route::post('/parametres',  [MedecinController::class, 'updateSettings'])->name('settings.update');
+    Route::delete('/compte',    [MedecinController::class, 'destroyAccount'])->name('destroy');
 });
 
 // ─── API Routes Patient ────────────────────────────────────────────────────────

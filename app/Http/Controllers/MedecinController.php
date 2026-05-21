@@ -227,4 +227,18 @@ class MedecinController extends Controller
 
         return back()->with('success', 'Paramètres mis à jour avec succès');
     }
+
+    public function destroyAccount()
+    {
+        $user = Auth::user();
+        if ($user->role === 'medecin') {
+            if ($user->medecin) {
+                $user->medecin->delete();
+            }
+            $user->delete();
+            Auth::logout();
+            return redirect('/')->with('success', 'Votre compte médecin a été définitivement supprimé.');
+        }
+        return back();
+    }
 }

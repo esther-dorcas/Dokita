@@ -314,13 +314,24 @@
                                     </template>
                                     
                                     <template x-if="f.type !== 'select'">
-                                        <input
-                                            :type="f.type"
-                                            :name="f.name"
-                                            :placeholder="f.placeholder"
-                                            :required="f.required"
-                                            class="form-input"
-                                        >
+                                        <div x-data="{ showPass: false }" style="position: relative;">
+                                            <input
+                                                :type="f.type === 'password' ? (showPass ? 'text' : 'password') : f.type"
+                                                :name="f.name"
+                                                :placeholder="f.placeholder"
+                                                :required="f.required"
+                                                class="form-input"
+                                                :style="f.type === 'password' ? 'padding-right: 3rem;' : ''"
+                                            >
+                                            <template x-if="f.type === 'password'">
+                                                <button type="button" @click="showPass = !showPass" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #64748b;">
+                                                    {{-- Œil fermé --}}
+                                                    <svg x-show="!showPass" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                                    {{-- Œil ouvert --}}
+                                                    <svg x-show="showPass" x-cloak width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                </button>
+                                            </template>
+                                        </div>
                                     </template>
                                 </div>
                             </template>
@@ -328,7 +339,7 @@
 
                         <div class="terms-row">
                             <input type="checkbox" id="terms" required>
-                            <label for="terms">J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a>.</label>
+                            <label for="terms">J'accepte les <a href="{{ route('conditions') }}" target="_blank">conditions d'utilisation</a> et la <a href="{{ route('confidentialite') }}" target="_blank">politique de confidentialité</a>.</label>
                         </div>
 
                         <button type="submit" class="btn-submit">

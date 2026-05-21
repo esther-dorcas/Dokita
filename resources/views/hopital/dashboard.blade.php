@@ -53,6 +53,17 @@
         <p style="font-size: 14px; color: #64748b; margin:0;">Supervision en temps réel des activités et des urgences de {{ Auth::user()->name ?? 'votre hôpital' }}.</p>
     </div>
 
+    @if($medecinsEnAttenteCount > 0)
+    <div style="background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+        <svg width="24" height="24" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div style="flex: 1;">
+            <div style="font-weight: 800; color: #92400e; font-size: 14px;">Demandes d'adhésion en attente</div>
+            <div style="font-size: 13px; color: #b45309; margin-top: 2px;">Vous avez <strong>{{ $medecinsEnAttenteCount }}</strong> médecin(s) qui souhaite(nt) rejoindre votre clinique. Ils n'auront pas accès au système et ne pourront pas recevoir de patients tant que vous ne les aurez pas approuvés.</div>
+        </div>
+        <a href="{{ route('hopital.medecins') }}" style="background: #f59e0b; color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none;">Gérer l'équipe</a>
+    </div>
+    @endif
+
     {{-- STATS --}}
     <div class="stat-grid">
         <div class="stat-card">

@@ -26,6 +26,7 @@ class RendezvousController extends Controller
     public function create()
     {
         $medecins = Medecin::with(['user', 'hopital'])
+            ->where('statut', 'actif')
             ->whereHas('user', function($query) {
                 $query->where('role', 'medecin');
             })

@@ -16,7 +16,7 @@
                 <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5">Navigation</h3>
                 <ul class="space-y-3 text-sm">
                     <li><a href="{{ route('home') }}#hospitaux"   class="hover:text-white transition font-semibold">Hôpitaux</a></li>
-                    <li><a href="{{ route('home') }}#medecins"    class="hover:text-white transition font-semibold">Médecins</a></li>
+                    <li><a href="{{ route('professional') }}"    class="hover:text-white transition font-semibold">Médecins</a></li>
                     <li><a href="{{ route('home') }}#temoignages" class="hover:text-white transition font-semibold">Témoignages</a></li>
                     <li><a href="{{ route('faq') }}"              class="hover:text-white transition font-semibold">FAQ</a></li>
                 </ul>

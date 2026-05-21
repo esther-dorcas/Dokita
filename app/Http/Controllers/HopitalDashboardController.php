@@ -50,8 +50,10 @@ class HopitalDashboardController extends Controller
 
         // Statistics
         $medecinsActifsCount = \App\Models\User::where('role', 'medecin')
-            ->whereHas('medecin', fn($q) => $q->where('hopital_id', $hopital->id))
+            ->whereHas('medecin', fn($q) => $q->where('hopital_id', $hopital->id)->where('statut', 'actif'))
             ->count();
+
+        $medecinsEnAttenteCount = \App\Models\Medecin::where('hopital_id', $hopital->id)->where('statut', 'en_attente')->count();
         
         $consultationsTodayCount = \App\Models\RendezVous::whereHas('medecin', fn($q) => $q->where('hopital_id', $hopital->id))
             ->whereDate('date_heure', Carbon::today())
@@ -74,13 +76,14 @@ class HopitalDashboardController extends Controller
             ->get();
 
         $medecinsGarde = \App\Models\User::where('role', 'medecin')
-            ->whereHas('medecin', fn($q) => $q->where('hopital_id', $hopital->id))
+            ->whereHas('medecin', fn($q) => $q->where('hopital_id', $hopital->id)->where('statut', 'actif'))
             ->with('medecin.specialite')
             ->take(4)
             ->get();
 
         return view('hopital.dashboard', compact(
             'medecinsActifsCount', 
+            'medecinsEnAttenteCount',
             'consultationsTodayCount', 
             'urgencesEnCoursCount', 
             'litsDisponibles',
@@ -267,6 +270,22 @@ class HopitalDashboardController extends Controller
 
         return redirect()->route('hopital.medecins')
             ->with('success', 'Profil du médecin mis à jour avec succès.');
+    }
+
+    public function medecinsDestroy($id)
+    {
+        $medecinUser = User::where('role', 'medecin')->findOrFail($id);
+
+        if ($medecinUser->medecin && $medecinUser->medecin->hopital_id !== Auth::user()->hopital->id) {
+            abort(403);
+        }
+
+        if ($medecinUser->medecin) {
+            $medecinUser->medecin->delete();
+        }
+        $medecinUser->delete();
+
+        return redirect()->route('hopital.medecins')->with('success', 'Le médecin a été définitivement supprimé et retiré de votre équipe.');
     }
 
     public function urgences()

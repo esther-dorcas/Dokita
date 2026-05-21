@@ -84,10 +84,35 @@
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
                 <a href="{{ route('hopital.medecins') }}" style="color: #64748b; font-size: 14px; font-weight: 700; text-decoration: none;">&larr; Annuler</a>
-                <button type="submit" class="btn-submit" style="width: auto; margin-top: 0;">Enregistrer les modifications</button>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="document.getElementById('modal-delete').style.display='flex'" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Exclure / Supprimer</button>
+                    <button type="submit" class="btn-submit" style="width: auto; margin-top: 0;">Enregistrer les modifications</button>
+                </div>
             </div>
+        </form>
+
+        <form id="delete-form" action="{{ route('hopital.medecins.destroy', $medecinUser->id) }}" method="POST" style="display: none;">
+            @csrf
+            @method('DELETE')
         </form>
     </div>
 
 </div>
+
+{{-- MODAL DE CONFIRMATION --}}
+<div id="modal-delete" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:32px; max-width:420px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.2); text-align:center;">
+        <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </div>
+        <h3 style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px;">Exclure ce médecin ?</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:24px;">Êtes-vous sûr de vouloir exclure ce médecin de votre hôpital ? Son compte sera <strong>définitivement supprimé</strong>.</p>
+        <div style="display:flex;gap:12px;">
+            <button onclick="document.getElementById('modal-delete').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#475569;">Annuler</button>
+            <button onclick="document.getElementById('delete-form').submit()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:800;cursor:pointer;">Oui, l'exclure</button>
+        </div>
+    </div>
+</div>
+
 @endsection
